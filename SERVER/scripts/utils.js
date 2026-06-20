@@ -4,8 +4,6 @@ module.exports.emailAddressPattern = /^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9-]+(
 
 module.exports.verifyToken = (token, secret) => {
   return new Promise((resolve, reject) => {
-    console.log({ token, secret })
-
     jwt.verify(token, secret, (err, decoded) => {
       if (err) {
         console.log(err)
