@@ -9,9 +9,9 @@ const connectDB = require("./config/db")
 const redisClient = require("./config/redis")
 
 const authRoutes = require("./routes/auth")
-const movieRoutes = require("./routes/movies")
-const theatreRoutes = require("./routes/theatres")
-const bookingRoutes = require("./routes/bookings")
+// const movieRoutes = require("./routes/movies")
+// const theatreRoutes = require("./routes/theatres")
+// const bookingRoutes = require("./routes/bookings")
 
 dotenv.config()
 
@@ -31,9 +31,9 @@ const limiter = rateLimit({
 app.use(limiter)
 
 app.use("/api/auth", authRoutes)
-app.use("/api/movies", movieRoutes)
-app.use("/api/theatres", theatreRoutes)
-app.use("/api/bookings", bookingRoutes)
+// app.use("/api/movies", movieRoutes)
+// app.use("/api/theatres", theatreRoutes)
+// app.use("/api/bookings", bookingRoutes)
 
 app.get("/", (req, res) => {
   res.json({ success: true, message: "CineFlow Movie Booking API is running" })
