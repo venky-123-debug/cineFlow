@@ -1,0 +1,9 @@
+SERVER/node_modules/
+SERVER/package-lock.json
+CLIENT/dist/
+SERVER/.env
+SERVER/UPLOADS/
+
+CLIENT/node_modules/
+CLIENT/package-lock.json
+CLIENT/public/assets/
