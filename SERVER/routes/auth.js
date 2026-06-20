@@ -88,28 +88,22 @@ app.post("/login", async (req, res) => {
 
     if (!utilities.emailAddressPattern.test(email)) throw "Invalid email address"
 
-    let thisUser = await User.findOne({ email }).lean()
+    let thisUser = await User.findOne({ email }, { role: 1, password: 1 }).lean()
     if (!thisUser) throw "Invalid credentials"
 
     const hashedPassword = SHA256(password).toString()
     if (thisUser.password !== hashedPassword) throw "Invalid credentials"
-
+    let data = utilities.cleanMongoDocument(thisUser)
     let tokenData = {
-      id: thisUser.userId,
-      role: thisUser.role,
+      id: data.id,
+      role: data.role,
     }
 
     let token = await utilities.generateToken(tokenData, process.env.JWT_SECRET, process.env.JWT_EXPIRATION)
-
+    // delete data.password
     response.success = true
     response.token = token
-    response.data = {
-      id: thisUser._id,
-      userId: thisUser.userId,
-      name: thisUser.name,
-      email: thisUser.email,
-      role: thisUser.role,
-    }
+    // response.data = data
   } catch (error) {
     response = await errorhandler(error, response)
   } finally {
