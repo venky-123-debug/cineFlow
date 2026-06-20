@@ -99,7 +99,7 @@ app.post("/login", async (req, res) => {
       role: data.role,
     }
 
-    let token = await utilities.generateToken(tokenData, process.env.JWT_SECRET, process.env.JWT_EXPIRATION)
+    let token = await utilities.generateToken(tokenData, process.env.JWT_SECRET, Number(process.env.JWT_EXPIRATION))
     // delete data.password
     response.success = true
     response.token = token

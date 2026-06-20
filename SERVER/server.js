@@ -9,7 +9,7 @@ const connectDB = require("./config/db")
 const redisClient = require("./config/redis")
 
 const authRoutes = require("./routes/auth")
-// const movieRoutes = require("./routes/movies")
+const movieRoutes = require("./routes/movies")
 // const theatreRoutes = require("./routes/theatres")
 // const bookingRoutes = require("./routes/bookings")
 
@@ -31,7 +31,7 @@ const limiter = rateLimit({
 app.use(limiter)
 
 app.use("/api/auth", authRoutes)
-// app.use("/api/movies", movieRoutes)
+app.use("/api/movies", movieRoutes)
 // app.use("/api/theatres", theatreRoutes)
 // app.use("/api/bookings", bookingRoutes)
 
