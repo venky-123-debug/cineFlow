@@ -18,4 +18,4 @@ const showSchema = new mongoose.Schema({
   availableSeats: { type: Number, required: true },
 })
 
-module.exports = mongoose.model("Show", showSchema)
+module.exports = mongoose.models.Show || mongoose.model("Show", showSchema)

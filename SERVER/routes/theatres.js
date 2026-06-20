@@ -12,8 +12,8 @@ app.get("/", async (req, res) => {
     const query = city ? { city: { $regex: city, $options: "i" } } : {}
 
     const theatres = await Theatre.find(query).lean().sort({ createdAt: -1 }).lean()
-    for (let theatre of theatres) {
-      theatre = utilities.cleanMongoDocument(theatre)
+    for (let i = 0; i < theatres.length; i++) {
+      theatres[i] = utilities.cleanMongoDocument(theatres[i])
     }
 
     response.success = true
@@ -29,7 +29,7 @@ app.get("/", async (req, res) => {
 app.get("/:id", async (req, res) => {
   let response = { success: false }
   try {
-    const theatre = await Theatre.findById(req.params.id).lean()
+    let theatre = await Theatre.findById(req.params.id).lean()
     if (!theatre) throw "Theatre not found"
     theatre = utilities.cleanMongoDocument(theatre)
     response.success = true

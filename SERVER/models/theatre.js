@@ -9,4 +9,4 @@ const theatreSchema = new mongoose.Schema({
   amenities: [{ type: String }], // e.g., ["AC", "Recliner", "Parking"]
 })
 
-module.exports = mongoose.model("Theatre", theatreSchema)
+module.exports = mongoose.models.Theatre || mongoose.model("Theatre", theatreSchema)

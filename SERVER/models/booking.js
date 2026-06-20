@@ -13,7 +13,7 @@ const bookingSchema = new mongoose.Schema({
   },
   seats: [{ type: String, required: true }], // e.g., ["A1", "A2"]
   totalAmount: { type: Number, required: true },
-  paymentId: { type: String }, // Stripe Payment Intent ID
+  paymentId: { type: String }, // Payment provider ID (Dodo Payments)
   status: {
     type: String,
     enum: ["PENDING", "CONFIRM", "CANCEL"],
@@ -22,4 +22,4 @@ const bookingSchema = new mongoose.Schema({
   ticketId: { type: String, unique: true },
 })
 
-module.exports = mongoose.model("Booking", bookingSchema)
+module.exports = mongoose.models.Booking || mongoose.model("Booking", bookingSchema)
