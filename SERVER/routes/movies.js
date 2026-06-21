@@ -101,11 +101,12 @@ app.post("/", upload.single("banner"), async (req, res) => {
     const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
     if (tokenData.role !== "ADMIN") throw "Admin access only"
 
-    const { title, description, duration, genre, poster, trailerUrl, releaseDate, language, rating, censorRating } = req.body
+    const { title, description, duration, genre, poster, trailerUrl, releaseDate, language, rating, censorRating } =
+      req.body
 
     if (!title || !description || !duration || !language) throw "Title, description, duration and language are required"
     if (rating && (rating < 0 || rating > 10)) throw "Rating must be between 0 and 10"
-    
+
     let thisMovie = await Movie.findOne({ title }).lean()
     if (thisMovie) throw "Movie already exists"
 
@@ -128,7 +129,7 @@ app.post("/", upload.single("banner"), async (req, res) => {
       rating: rating || 0,
       censorRating: censorRating || "UA",
     }).save()
-    
+
     newMovie = utilities.cleanMongoDocument(newMovie)
     response.success = true
     response.data = newMovie
@@ -206,6 +207,25 @@ app.post("/:id/upload-banner", upload.single("banner"), async (req, res) => {
         if (err) console.error("Error deleting file:", err)
       })
     }
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
+app.delete("/:id", async (req, res) => {
+  let response = { success: false }
+  try {
+    if (!req.headers["access-token"]) throw "No token"
+    const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+    if (tokenData.role !== "ADMIN") throw "Admin access only"
+
+    let updatedMovie = await Movie.findByIdAndDelete(req.params.id).lean()
+
+    if (!updatedMovie) throw "Movie not found"
+
+    response.success = true
+  } catch (error) {
     response = await errorhandler(error, response)
   } finally {
     res.json(response)
