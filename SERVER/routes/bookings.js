@@ -5,13 +5,19 @@ const errorhandler = require("../scripts/error")
 const redisClient = require("../config/redis")
 const Booking = require("../models/booking")
 const Show = require("../models/show")
-const axios = require("axios")
+const User = require("../models/user")
+const Razorpay = require("razorpay")
 const qrcode = require("qrcode")
 const { v4: uuidv4 } = require("uuid")
-const DODO_API_URL = process.env.DODO_API_URL || "https://api.dodopayments.com"
-const DODO_API_KEY = process.env.DODO_API_KEY || ""
-const DODO_CALLBACK_URL = process.env.DODO_CALLBACK_URL || `${process.env.APP_URL || "http://localhost:6000"}/webhook`
-const DODO_CURRENCY = process.env.CURRENCY || "INR"
+require("dotenv").config()
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+})
+const CURRENCY = process.env.CURRENCY || "INR"
+const CALLBACK_URL = process.env.RAZORPAY_CALLBACK_URL || `${process.env.APP_URL || "http://localhost:5000"}/webhook`
+
+const app = express.Router()
 
 // Helper to build redis lock key for a seat
 const seatLockKey = (showId, seat) => `lock:show:${showId}:seat:${seat}`
@@ -45,7 +51,7 @@ async function releaseSeatLocks(keys = []) {
 }
 
 // Create booking + PaymentIntent
-router.post("/create", async (req, res) => {
+app.post("/create", async (req, res) => {
   let response = { success: false }
   try {
     if (!req.headers["access-token"]) throw "No token"
@@ -71,48 +77,50 @@ router.post("/create", async (req, res) => {
 
     // Create pending booking
     const totalAmount = show.price * seats.length
+
     let booking = await new Booking({
       userId,
       showId,
       seats,
       totalAmount,
+      ticketId: uuidv4(),
       status: "PENDING",
     }).save()
 
-    // Create Dodo payment order
-    if (!DODO_API_KEY) throw "Dodo Payments not configured"
-    const dodoBody = {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) throw "Razorpay not configured"
+
+    const user = await User.findById(userId)
+    if (!user) throw "User not found"
+
+    const paymentLink = await razorpay.paymentLink.create({
       amount: Math.round(totalAmount * 100),
-      currency: DODO_CURRENCY,
-      payment_method: "upi", // adjust according to Dodo supported payment methods
+      currency: CURRENCY,
       description: `CineFlow booking ${booking._id}`,
-      callback_url: DODO_CALLBACK_URL,
-      metadata: {
+      reference_id: booking._id.toString(),
+      customer: {
+        name: user.name || "CineFlow Customer",
+        email: user.email || undefined,
+      },
+      notify: {
+        sms: false,
+        email: !!user.email,
+      },
+      callback_url: CALLBACK_URL,
+      callback_method: "get",
+      notes: {
         bookingId: booking._id.toString(),
         userId: userId.toString(),
       },
-      customer: {
-        id: userId.toString(),
-      },
-    }
-
-    const dodoResponse = await axios.post(`${DODO_API_URL}/payments`, dodoBody, {
-      headers: {
-        Authorization: `Bearer ${DODO_API_KEY}`,
-        "Content-Type": "application/json",
-      },
     })
 
-    const paymentData = dodoResponse.data
-    if (!paymentData || !paymentData.id) throw "Dodo payment creation failed"
-
-    booking.paymentId = paymentData.id
+    booking.paymentId = paymentLink.id
     await booking.save()
 
     response.success = true
     response.data = {
-      paymentUrl: paymentData.payment_url || paymentData.redirect_url || paymentData.url,
-      bookingId: booking._id,
+      booking: utilities.cleanMongoDocument(booking),
+      paymentUrl: paymentLink.short_url || paymentLink.long_url || "",
+      paymentLinkId: paymentLink.id,
     }
     response.locks = lock.keys
   } catch (error) {
@@ -123,7 +131,7 @@ router.post("/create", async (req, res) => {
 })
 
 // Ticket rendering endpoint: returns simple HTML ticket with QR code
-router.get("/ticket/:bookingId", async (req, res) => {
+app.get("/ticket/:bookingId", async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.bookingId).populate("showId").lean()
     if (!booking) return res.status(404).send("Booking not found")
@@ -182,4 +190,4 @@ router.get("/ticket/:bookingId", async (req, res) => {
   }
 })
 
-module.exports = router
+module.exports = app

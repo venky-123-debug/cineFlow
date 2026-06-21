@@ -20,6 +20,7 @@ const { v4: uuidv4 } = require("uuid")
 
 dotenv.config()
 
+const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || ""
 const app = express()
 const PORT = process.env.PORT || 5000
 
@@ -27,60 +28,81 @@ app.use(helmet())
 app.use(cors())
 app.use(morgan("combined"))
 
-// Dodo Payments webhook verification and event handling.
-app.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  async (req, res) => {
-    const rawBody = req.body
-    const signature = req.headers["x-dodo-signature"] || req.headers["x-signature"]
-    const webhookSecret = process.env.DODO_WEBHOOK_SECRET || ""
+app.get("/razorpay/redirect", (req, res) => {
+  const {
+    razorpay_payment_id,
+    razorpay_payment_link_id,
+    razorpay_payment_link_reference_id,
+    razorpay_payment_link_status,
+  } = req.query
+  res.send(`
+    <html>
+      <body>
+        <h1>Payment completed</h1>
+        <p>Payment ID: ${razorpay_payment_id || "N/A"}</p>
+        <p>Link ID: ${razorpay_payment_link_id || "N/A"}</p>
+        <p>Reference ID: ${razorpay_payment_link_reference_id || "N/A"}</p>
+        <p>Status: ${razorpay_payment_link_status || "N/A"}</p>
+        <p>Webhook will also notify the server separately.</p>
+      </body>
+    </html>
+  `)
+})
 
-    if (webhookSecret && signature) {
-      const expectedSignature = crypto
-        .createHmac("sha256", webhookSecret)
-        .update(rawBody)
-        .digest("hex")
-      if (signature !== expectedSignature) {
-        console.log("Dodo webhook signature verification failed")
-        return res.status(400).send("Webhook signature verification failed")
-      }
+// Razorpay webhook verification and event handling.
+app.post("/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  const rawBody = req.body
+  const signature = req.headers["x-razorpay-signature"]
+
+  if (webhookSecret) {
+    const expectedSignature = crypto.createHmac("sha256", webhookSecret).update(rawBody).digest("hex")
+    if (signature !== expectedSignature) {
+      console.log("Razorpay webhook signature verification failed")
+      return res.status(400).send("Webhook signature verification failed")
     }
-
-    let event
-    try {
-      event = JSON.parse(rawBody.toString())
-    } catch (err) {
-      console.log("Invalid webhook payload", err)
-      return res.status(400).send("Invalid payload")
-    }
-
-    const eventType = event.type || event.event || ""
-    const paymentData = event.data || event.payload || {}
-    const paymentId = paymentData.id || event.id
-
-    if (["payment.success", "payment.succeeded", "payment_intent.succeeded", "payment_successful"].includes(eventType)) {
-      try {
-        const booking = await Booking.findOne({ paymentId })
-        if (booking) {
-          booking.status = "CONFIRM"
-          booking.ticketId = uuidv4()
-          await booking.save()
-          await Show.findByIdAndUpdate(booking.showId, { $inc: { availableSeats: -booking.seats.length } })
-          const redisClient = require("./config/redis")
-          for (const seat of booking.seats) {
-            const key = `lock:show:${booking.showId}:seat:${seat}`
-            await redisClient.del(key)
-          }
-        }
-      } catch (err) {
-        console.error("Error processing Dodo payment webhook:", err)
-      }
-    }
-
-    res.json({ received: true })
   }
-)
+
+  let event
+  try {
+    event = JSON.parse(rawBody.toString())
+  } catch (err) {
+    console.log("Invalid webhook payload", err)
+    return res.status(400).send("Invalid payload")
+  }
+
+  const eventType = event.event || ""
+  const paymentEntity = event.payload?.payment?.entity || {}
+  const paymentLinkEntity = event.payload?.payment_link?.entity || {}
+  const orderId = paymentEntity.order_id || event.payload?.order?.entity?.id
+  const paymentLinkId = paymentLinkEntity.id
+
+  if (["payment.captured", "payment.authorized", "order.paid", "payment_link.paid"].includes(eventType)) {
+    try {
+      let booking = null
+      if (orderId) {
+        booking = await Booking.findOne({ paymentId: orderId })
+      }
+      if (!booking && paymentLinkId) {
+        booking = await Booking.findOne({ paymentId: paymentLinkId })
+      }
+      if (booking) {
+        booking.status = "CONFIRM"
+        booking.ticketId = booking.ticketId || uuidv4()
+        await booking.save()
+        await Show.findByIdAndUpdate(booking.showId, { $inc: { availableSeats: -booking.seats.length } })
+        const redisClient = require("./config/redis")
+        for (const seat of booking.seats) {
+          const key = `lock:show:${booking.showId}:seat:${seat}`
+          await redisClient.del(key)
+        }
+      }
+    } catch (err) {
+      console.error("Error processing Razorpay webhook:", err)
+    }
+  }
+
+  res.json({ received: true })
+})
 
 app.use(express.json({ limit: "10mb" }))
 
