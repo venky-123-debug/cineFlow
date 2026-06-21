@@ -58,20 +58,22 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {statCards.map((card, index) => (
-          <div
-            key={index}
-            className={`bg-gradient-to-br ${card.color} rounded-lg p-6 text-white shadow-lg hover:shadow-xl transition`}
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-gray-200 text-sm mb-2">{card.title}</p>
-                <p className="text-3xl font-bold">{card.value}</p>
+        {statCards.map((card, index) => {
+          return (
+            <div
+              key={index}
+              className={`bg-linear-to-br ${card.color} rounded-lg p-6 text-white shadow-lg hover:shadow-xl transition`}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-gray-200 text-sm mb-2">{card.title}</p>
+                  <p className="text-3xl font-bold">{card.value}</p>
+                </div>
+                <span className="text-4xl">{card.icon}</span>
               </div>
-              <span className="text-4xl">{card.icon}</span>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Quick Actions */}

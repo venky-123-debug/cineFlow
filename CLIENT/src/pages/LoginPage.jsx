@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../redux/slices/authSlice";
 import { useNavigate, Link } from "react-router-dom";
+import { redirect } from "react-router"
 import { toast } from "react-toastify";
 
 export default function LoginPage() {
@@ -10,7 +11,7 @@ export default function LoginPage() {
   const { loading, error } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-
+  // const {role,setRole} = useState("ADMIN")
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -26,20 +27,25 @@ export default function LoginPage() {
     try {
       const result = await dispatch(loginUser(formData)).unwrap();
       toast.success("Login successful!");
+      console.log(result);
 
       // Redirect based on role
-      setTimeout(() => {
-        navigate(
-          result.user?.role === "ADMIN" ? "/admin/dashboard" : "/user/browse",
-        );
-      }, 1000);
+      // setTimeout(() => {
+        console.log("Navigating...")
+    
+        navigate(result.user.role === "ADMIN" ? "/admin/dashboard" : "/user/browse");
+
+        console.log(window.location.pathname);
+
     } catch (err) {
+      console.error(error);
+      
       toast.error(err || "Login failed");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-950 to-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo & Header */}
         <div className="text-center mb-8">
@@ -127,9 +133,10 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => {
+                // setRole("ADMIN");
                 setFormData({
                   email: "admin@cineflow.com",
-                  password: "admin123",
+                  password: "NewPass@12345",
                 });
               }}
               className="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 py-2 rounded border border-gray-700 transition text-sm"
@@ -139,9 +146,10 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => {
+                // setRole("USER")
                 setFormData({
                   email: "user@cineflow.com",
-                  password: "user123",
+                  password: "NewPass@12345",
                 });
               }}
               className="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 py-2 rounded border border-gray-700 transition text-sm"

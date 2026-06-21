@@ -6,7 +6,12 @@ import Sidebar from "./Sidebar";
 
 export default function ProtectedRoute({ children, requiredRole }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => {
+
+    console.log("User in ProtectedRoute:", state);
+    return state.auth.user;
+  });
+  console.log(isAuthenticated, user,requiredRole);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

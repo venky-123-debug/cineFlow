@@ -30,9 +30,10 @@ export default function App() {
   const dispatch = useDispatch();
   const { isAuthenticated, user, token } = useSelector((state) => state.auth);
 
+
   // Check for stored token on app mount
   useEffect(() => {
-    const storedToken = localStorage.getItem("access-token");
+    const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
     if (storedToken && storedUser && !isAuthenticated) {

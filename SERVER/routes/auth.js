@@ -88,7 +88,7 @@ app.post("/login", async (req, res) => {
 
     if (!utilities.emailAddressPattern.test(email)) throw "Invalid email address"
 
-    let thisUser = await User.findOne({ email }, { role: 1, password: 1 }).lean()
+    let thisUser = await User.findOne({ email }, { role: 1, password: 1, name: 1 }).lean()
     if (!thisUser) throw "Invalid credentials"
 
     const hashedPassword = SHA256(password).toString()
@@ -100,10 +100,10 @@ app.post("/login", async (req, res) => {
     }
 
     let token = await utilities.generateToken(tokenData, process.env.JWT_SECRET, Number(process.env.JWT_EXPIRATION))
-    // delete data.password
+    delete data.password
     response.success = true
     response.token = token
-    // response.data = data
+    response.data = data
   } catch (error) {
     response = await errorhandler(error, response)
   } finally {
