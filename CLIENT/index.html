@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="CineFlow - Book your favorite movies online with premium seat selection and secure payments"
+    />
+    <meta property="og:title" content="CineFlow - Movie Booking" />
+    <meta
+      property="og:description"
+      content="Book cinema tickets online easily and securely"
+    />
+    <meta property="og:image" content="/logo.png" />
+
+    <title>CineFlow - Book Movies Online</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS (if using CDN, otherwise it's bundled) -->
+    <style>
+      * {
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #030712;
+        color: #ffffff;
+      }
+
+      #root {
+        min-height: 100vh;
+      }
+
+      /* Smooth scrolling */
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* Scrollbar Styling */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #1f2937;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #dc2626;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #b91c1c;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div
+        style="
+          background: #1f2937;
+          color: #ffffff;
+          padding: 20px;
+          text-align: center;
+          font-family: Arial, sans-serif;
+        "
+      >
+        <h1>🎬 CineFlow</h1>
+        <p>
+          JavaScript is required to run this application. Please enable
+          JavaScript in your browser settings.
+        </p>
+      </div>
+    </noscript>
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
+
+    <!-- Analytics (Optional) -->
+    <script>
+      // Add your analytics code here
+      // Example: Google Analytics, Mixpanel, etc.
+    </script>
+  </body>
+</html>

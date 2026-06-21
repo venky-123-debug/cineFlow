@@ -28,6 +28,9 @@ app.use(helmet())
 app.use(cors())
 app.use(morgan("combined"))
 
+// Serve static files from uploads directory
+app.use("/uploads", express.static("uploads"))
+
 app.get("/razorpay/redirect", (req, res) => {
   const {
     razorpay_payment_id,
@@ -79,22 +82,43 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
   if (["payment.captured", "payment.authorized", "order.paid", "payment_link.paid"].includes(eventType)) {
     try {
       let booking = null
+      // Try to find by orderId first
       if (orderId) {
-        booking = await Booking.findOne({ paymentId: orderId })
+        booking = await Booking.findOne({ orderId: orderId })
       }
+      // Fallback to paymentId (Razorpay payment ID)
+      if (!booking && paymentEntity.id) {
+        booking = await Booking.findOne({ paymentId: paymentEntity.id })
+      }
+      // Fallback to paymentLinkId
       if (!booking && paymentLinkId) {
         booking = await Booking.findOne({ paymentId: paymentLinkId })
       }
+
       if (booking) {
+        console.log(`Webhook: Confirming booking ${booking._id} for payment ${orderId || paymentEntity.id}`)
         booking.status = "CONFIRM"
         booking.ticketId = booking.ticketId || uuidv4()
         await booking.save()
-        await Show.findByIdAndUpdate(booking.showId, { $inc: { availableSeats: -booking.seats.length } })
+
+        // Update available seats only if not already updated
+        const show = await Show.findById(booking.showId)
+        if (
+          show &&
+          show.availableSeats + booking.seats.length === (await Show.findById(booking.showId)).availableSeats
+        ) {
+          await Show.findByIdAndUpdate(booking.showId, { $inc: { availableSeats: -booking.seats.length } })
+        }
+
+        // Clear Redis seat locks
         const redisClient = require("./config/redis")
         for (const seat of booking.seats) {
           const key = `lock:show:${booking.showId}:seat:${seat}`
           await redisClient.del(key)
         }
+        console.log(`Webhook: Booking confirmed with ticket ${booking.ticketId}`)
+      } else {
+        console.log(`⚠️ Webhook: No booking found for orderId=${orderId}, paymentId=${paymentEntity.id}`)
       }
     } catch (err) {
       console.error("Error processing Razorpay webhook:", err)

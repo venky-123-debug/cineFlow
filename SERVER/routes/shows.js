@@ -23,8 +23,8 @@ app.get("/", async (req, res) => {
       .populate("theatreId", "name location city")
       .lean()
       .sort({ showTime: 1 })
-    for (let show of shows) {
-      show = utilities.cleanMongoDocument(show)
+    for (let i = 0; i < shows.length; i++) {
+      shows[i] = utilities.cleanMongoDocument(shows[i])
     }
     response.success = true
     response.data = shows
@@ -54,6 +54,92 @@ app.get("/:id", async (req, res) => {
     res.json(response)
   }
 })
+
+//  GET SEAT STATUS FOR A SHOW (For frontend seat selection)
+app.get("/:id/seats", async (req, res) => {
+  let response = { success: false }
+  try {
+    const { id } = req.params
+
+    const show = await Show.findById(id)
+      .populate("movieId", "title")
+      .populate("theatreId", "name location city")
+      .lean()
+
+    if (!show) throw "Show not found"
+
+    // Generate seat matrix if not exists
+    if (!show.seats || show.seats.length === 0) {
+      show.seats = generateSeatMatrix(show.totalRows || 12, show.seatsPerRow || 15)
+    }
+
+    // Group seats by status and category
+    const seatStatus = {
+      available: 0,
+      booked: 0,
+      locked: 0,
+      byCategory: {
+        PREMIUM: { available: 0, booked: 0, locked: 0 },
+        STANDARD: { available: 0, booked: 0, locked: 0 },
+        ECONOMY: { available: 0, booked: 0, locked: 0 }
+      }
+    }
+
+    show.seats.forEach(seat => {
+      seatStatus[seat.status.toLowerCase()]++
+      if (seat.category && seatStatus.byCategory[seat.category]) {
+        seatStatus.byCategory[seat.category][seat.status.toLowerCase()]++
+      }
+    })
+
+    response.success = true
+    response.data = {
+      showId: show._id,
+      movie: show.movieId,
+      theatre: show.theatreId,
+      showTime: show.showTime,
+      seats: show.seats,
+      seatStatus: seatStatus,
+      totalSeats: show.seats.length,
+      availableSeats: show.availableSeats,
+      ticketCategories: show.ticketCategories
+    }
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
+// Helper function to generate seat matrix
+function generateSeatMatrix(rows, seatsPerRow) {
+  const seats = []
+  const rowLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").slice(0, rows)
+  
+  // Define seat categories based on position
+  const premiumRows = [5, 6, 7] // Middle rows are premium
+  
+  rowLetters.forEach((row, rowIndex) => {
+    for (let col = 1; col <= seatsPerRow; col++) {
+      let category = "ECONOMY"
+      
+      if (premiumRows.includes(rowIndex)) {
+        category = "PREMIUM"
+      } else if (rowIndex >= 3 && rowIndex <= 8) {
+        category = "STANDARD"
+      }
+      
+      seats.push({
+        seatNumber: row + col,
+        category: category,
+        price: category === "PREMIUM" ? 250 : category === "STANDARD" ? 200 : 150,
+        status: "AVAILABLE"
+      })
+    }
+  })
+  
+  return seats
+}
 
 //  ADMIN: CREATE SHOW
 app.post("/", async (req, res) => {

@@ -13,13 +13,14 @@ const bookingSchema = new mongoose.Schema({
   },
   seats: [{ type: String, required: true }], // e.g., ["A1", "A2"]
   totalAmount: { type: Number, required: true },
-  paymentId: { type: String }, // Payment provider order ID (Razorpay order id)
+  paymentId: { type: String }, // Razorpay payment ID
+  orderId: { type: String }, // Razorpay order ID (for webhook lookup)
   status: {
     type: String,
     enum: ["PENDING", "CONFIRM", "CANCEL"],
     default: "PENDING",
   },
-  ticketId: { type: String, unique: true }, // Unique ticket ID for confirmed bookings
+  ticketId: { type: String, unique: true, sparse: true }, // Unique ticket ID for confirmed bookings
   createdAt: { type: Date, default: Date.now },
 })
 
