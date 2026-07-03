@@ -24,7 +24,7 @@ export default function LoginPage() {
     try {
       const result = await dispatch(loginUser(formData)).unwrap();
       toast.success("Login successful!");
-      navigate(result.user.role === "ADMIN" ? "/admin/dashboard" : "/user/browse");
+      navigate(result.user.role === "ADMIN" ? "/admin/dashboard" : "/home");
     } catch (err) {
       toast.error(err || "Login failed");
     }

@@ -257,4 +257,103 @@ app.post("/webhook", async (req, res) => {
   }
 })
 
+// GET MY BOOKINGS (user)
+app.get("/my-bookings", async (req, res) => {
+  let response = { success: false }
+  try {
+    if (!req.headers["access-token"]) throw "No token"
+    const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+
+    const bookings = await Booking.find({ userId: tokenData.id })
+      .populate({ path: "showId", populate: [{ path: "movieId" }, { path: "theatreId" }] })
+      .sort({ createdAt: -1 })
+      .lean()
+
+    const data = bookings.map(b => ({
+      ...utilities.cleanMongoDocument(b),
+      movieId: b.showId?.movieId ? utilities.cleanMongoDocument(b.showId.movieId) : null,
+      showId: b.showId ? {
+        ...utilities.cleanMongoDocument(b.showId),
+        theatreId: b.showId.theatreId ? utilities.cleanMongoDocument(b.showId.theatreId) : null,
+        movieId: undefined,
+      } : null,
+    }))
+
+    response.success = true
+    response.data = data
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
+// GET BOOKING STATS (admin)
+app.get("/stats", async (req, res) => {
+  let response = { success: false }
+  try {
+    if (!req.headers["access-token"]) throw "No token"
+    await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+
+    const totalBookings = await Booking.countDocuments({ status: "CONFIRM" })
+    const revenueAgg = await Booking.aggregate([
+      { $match: { status: "CONFIRM" } },
+      { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+    ])
+    const totalRevenue = revenueAgg[0]?.total || 0
+
+    const recentBookings = await Booking.find({ status: "CONFIRM" })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate({ path: "showId", populate: [{ path: "movieId" }, { path: "theatreId" }] })
+      .populate("userId", "name email")
+      .lean()
+
+    response.success = true
+    response.data = {
+      totalBookings,
+      totalRevenue,
+      recentBookings: recentBookings.map(b => utilities.cleanMongoDocument(b)),
+    }
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
+// GET ALL BOOKINGS (admin)
+app.get("/", async (req, res) => {
+  let response = { success: false }
+  try {
+    if (!req.headers["access-token"]) throw "No token"
+    await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+
+    const { page = 1, limit = 20, status = "", search = "" } = req.query
+    const query = {}
+    if (status) query.status = status
+
+    const bookings = await Booking.find(query)
+      .populate({ path: "showId", populate: [{ path: "movieId" }, { path: "theatreId" }] })
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit))
+      .lean()
+
+    const total = await Booking.countDocuments(query)
+
+    response.success = true
+    response.data = {
+      bookings: bookings.map(b => utilities.cleanMongoDocument(b)),
+      pagination: { page: Number(page), limit: Number(limit), total, pages: Math.ceil(total / Number(limit)) }
+    }
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
 module.exports = app
+

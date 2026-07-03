@@ -1,17 +1,19 @@
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./slices/authSlice";
-import movieReducer from "./slices/movieSlice";
-import showReducer from "./slices/showSlice";
+import authReducer    from "./slices/authSlice";
+import movieReducer   from "./slices/movieSlice";
+import showReducer    from "./slices/showSlice";
 import bookingReducer from "./slices/bookingSlice";
-import uiReducer from "./slices/uiSlice";
+import theatreReducer from "./slices/theatreSlice";
+import uiReducer      from "./slices/uiSlice";
 
 const store = configureStore({
   reducer: {
-    auth: authReducer,
-    movies: movieReducer,
-    shows: showReducer,
+    auth:     authReducer,
+    movies:   movieReducer,
+    shows:    showReducer,
     bookings: bookingReducer,
-    ui: uiReducer,
+    theatres: theatreReducer,
+    ui:       uiReducer,
   },
 });
 
