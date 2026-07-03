@@ -1,6 +1,6 @@
 const express = require("express")
 const app = express.Router()
-const Theatre = require("../models/Theatre")
+const Theatre = require("../models/theatre")
 const utilities = require("../scripts/utils")
 const errorhandler = require("../scripts/error")
 
@@ -11,13 +11,27 @@ app.get("/", async (req, res) => {
     const { city } = req.query
     const query = city ? { city: { $regex: city, $options: "i" } } : {}
 
-    const theatres = await Theatre.find(query).lean().sort({ createdAt: -1 }).lean()
+    const theatres = await Theatre.find(query).lean().sort({ createdAt: -1 })
     for (let i = 0; i < theatres.length; i++) {
       theatres[i] = utilities.cleanMongoDocument(theatres[i])
     }
 
     response.success = true
     response.data = theatres
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
+//  GET UNIQUE CITIES
+app.get("/cities", async (req, res) => {
+  let response = { success: false }
+  try {
+    const cities = await Theatre.distinct("city")
+    response.success = true
+    response.data = cities
   } catch (error) {
     response = await errorhandler(error, response)
   } finally {

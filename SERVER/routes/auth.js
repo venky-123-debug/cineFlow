@@ -1,6 +1,6 @@
 const express = require("express")
 const app = express.Router()
-const User = require("../models/User")
+const User = require("../models/user")
 const { v4: uuidv4 } = require("uuid")
 const SHA256 = require("crypto-js/sha256")
 const utilities = require("../scripts/utils")
@@ -89,7 +89,7 @@ app.post("/login", async (req, res) => {
     if (!utilities.emailAddressPattern.test(email)) throw "Invalid email address"
 
     let thisUser = await User.findOne({ email }, { role: 1, password: 1, name: 1 }).lean()
-    if (!thisUser) throw "Invalid credentials"
+    if (!thisUser) throw "Not found"
 
     const hashedPassword = SHA256(password).toString()
     if (thisUser.password !== hashedPassword) throw "Invalid credentials"

@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 5000
 
 app.use(helmet())
 app.use(cors())
-app.use(morgan("combined"))
+app.use(morgan("dev"))
 
 // Serve static files from uploads directory
 app.use("/uploads", express.static("uploads"))

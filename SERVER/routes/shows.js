@@ -1,8 +1,8 @@
 const express = require("express")
 const app = express.Router()
-const Show = require("../models/Show")
-const Movie = require("../models/Movie")
-const Theatre = require("../models/Theatre")
+const Show = require("../models/show")
+const Movie = require("../models/movie")
+const Theatre = require("../models/theatre")
 const utilities = require("../scripts/utils")
 const errorhandler = require("../scripts/error")
 
@@ -16,7 +16,11 @@ app.get("/", async (req, res) => {
 
     if (movieId) query.movieId = movieId
     if (theatreId) query.theatreId = theatreId
-    if (city) query["theatre.city"] = { $regex: city, $options: "i" } // if you populate theatre
+    if (city) {
+      const theatres = await Theatre.find({ city: { $regex: city, $options: "i" } }).select("_id")
+      const theatreIds = theatres.map((t) => t._id)
+      query.theatreId = { $in: theatreIds }
+    }
 
     const shows = await Show.find(query)
       .populate("movieId", "title poster duration genre")
@@ -28,6 +32,69 @@ app.get("/", async (req, res) => {
     }
     response.success = true
     response.data = shows
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
+//  GET SHOWS SCHEDULE (BookMyShow Style: Movie -> City -> Date -> Theatres -> Shows)
+app.get("/schedule", async (req, res) => {
+  let response = { success: false }
+  try {
+    const { movieId, city, date } = req.query
+
+    if (!movieId) throw "movieId is required"
+    if (!city) throw "city is required"
+
+    // 1. Find all theatres in the selected city
+    const theatres = await Theatre.find({ city: { $regex: city, $options: "i" } }).lean()
+    const theatreIds = theatres.map((t) => t._id)
+
+    // 2. Build show query
+    const showQuery = {
+      movieId: movieId,
+      theatreId: { $in: theatreIds },
+    }
+
+    // 3. Filter by date if provided (defaulting to today's date if omitted)
+    const targetDate = date ? new Date(date) : new Date()
+    const startOfDay = new Date(targetDate)
+    startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay = new Date(targetDate)
+    endOfDay.setHours(23, 59, 59, 999)
+
+    // Using both showDate and showTime range to ensure match
+    showQuery.$or = [
+      { showDate: { $gte: startOfDay, $lte: endOfDay } },
+      { showTime: { $gte: startOfDay, $lte: endOfDay } }
+    ]
+
+    // 4. Find shows sorted by show time
+    const shows = await Show.find(showQuery).lean().sort({ showTime: 1 })
+
+    // 5. Group shows by theatre
+    const theatreMap = {}
+    theatres.forEach((t) => {
+      theatreMap[t._id.toString()] = {
+        ...utilities.cleanMongoDocument(t),
+        shows: [],
+      }
+    })
+
+    shows.forEach((s) => {
+      const tId = s.theatreId.toString()
+      if (theatreMap[tId]) {
+        theatreMap[tId].shows.push(utilities.cleanMongoDocument(s))
+      }
+    })
+
+    // Filter out theatres that do not have any shows for this movie on this date
+    const schedule = Object.values(theatreMap).filter((t) => t.shows.length > 0)
+
+    response.success = true
+    response.data = schedule
   } catch (error) {
     response = await errorhandler(error, response)
   } finally {
