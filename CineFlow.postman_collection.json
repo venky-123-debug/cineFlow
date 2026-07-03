@@ -1,0 +1,847 @@
+{
+	"info": {
+		"_postman_id": "8fa538be-0ea8-4e3a-b851-bc266f8cc67e",
+		"name": "CineFlow API Collection",
+		"description": "Postman Collection for CineFlow Movie Booking & Seat Locking API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "User Signup",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"USER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/user/signup",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"user",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Registration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\",\n  \"role\": \"ADMIN\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/admin/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"admin",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson = pm.response.json();",
+									"if (responseJson.success && responseJson.token) {",
+									"    pm.environment.set(\"accessToken\", responseJson.token);",
+									"    pm.collectionVariables.set(\"accessToken\", responseJson.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Movies",
+			"item": [
+				{
+					"name": "Get All Movies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/movies?page=1&limit=10&city=Mumbai&genre=Action&language=Hindi",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"movies"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "city",
+									"value": "Mumbai",
+									"description": "Filter movies showing in this city"
+								},
+								{
+									"key": "genre",
+									"value": "Action",
+									"disabled": true
+								},
+								{
+									"key": "language",
+									"value": "Hindi",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Movie",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/movies/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"movies",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "MOVIE_OBJECT_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin: Create Movie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "title",
+									"value": "Inception",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "A thief who steals corporate secrets through the use of dream-sharing technology.",
+									"type": "text"
+								},
+								{
+									"key": "duration",
+									"value": "148",
+									"type": "text"
+								},
+								{
+									"key": "language",
+									"value": "English",
+									"type": "text"
+								},
+								{
+									"key": "genre",
+									"value": "Sci-Fi",
+									"type": "text"
+								},
+								{
+									"key": "censorRating",
+									"value": "UA",
+									"type": "text"
+								},
+								{
+									"key": "banner",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/movies",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"movies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin: Upload Banner",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "banner",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/movies/:id/upload-banner",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"movies",
+								":id",
+								"upload-banner"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "MOVIE_OBJECT_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin: Update Movie",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rating\": 9\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/movies/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"movies",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "MOVIE_OBJECT_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin: Delete Movie",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/movies/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"movies",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "MOVIE_OBJECT_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Theatres",
+			"item": [
+				{
+					"name": "Get All Theatres",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/theatres?city=Mumbai",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"theatres"
+							],
+							"query": [
+								{
+									"key": "city",
+									"value": "Mumbai"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cities List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/theatres/cities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"theatres",
+								"cities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Theatre",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/theatres/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"theatres",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "THEATRE_OBJECT_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin: Create Theatre",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"PVR Dynamix\",\n  \"location\": \"Juhu\",\n  \"city\": \"Mumbai\",\n  \"totalSeats\": 180,\n  \"screens\": 4,\n  \"amenities\": [\"AC\", \"Recliner\", \"Valet Parking\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/theatres",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"theatres"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin: Update Theatre",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amenities\": [\"AC\", \"Recliner\", \"Valet Parking\", \"Dolby Atmos\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/theatres/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"theatres",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "THEATRE_OBJECT_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Shows & Seat Locking",
+			"item": [
+				{
+					"name": "Get All Shows",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/shows?movieId=MOVIE_ID&city=Mumbai",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"shows"
+							],
+							"query": [
+								{
+									"key": "movieId",
+									"value": "MOVIE_ID",
+									"disabled": true
+								},
+								{
+									"key": "city",
+									"value": "Mumbai"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Showtimes Schedule",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/shows/schedule?movieId=MOVIE_ID&city=Mumbai&date=2026-07-03",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"shows",
+								"schedule"
+							],
+							"query": [
+								{
+									"key": "movieId",
+									"value": "MOVIE_ID"
+								},
+								{
+									"key": "city",
+									"value": "Mumbai"
+								},
+								{
+									"key": "date",
+									"value": "2026-07-03",
+									"description": "Optional: defaults to today"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Show Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/shows/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"shows",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "SHOW_OBJECT_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Seat Layout & Locks Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/shows/:id/seats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"shows",
+								":id",
+								"seats"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "SHOW_OBJECT_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User: Lock Seats (10 mins)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"seats\": [\"F5\", \"F6\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/shows/:id/lock",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"shows",
+								":id",
+								"lock"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "SHOW_OBJECT_ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin: Create Show",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"movieId\": \"MOVIE_OBJECT_ID\",\n  \"theatreId\": \"THEATRE_OBJECT_ID\",\n  \"screenNumber\": 1,\n  \"showTime\": \"2026-07-03T18:00:00.000Z\",\n  \"price\": 200,\n  \"showDate\": \"2026-07-03T00:00:00.000Z\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/shows",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"shows"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bookings & Payment",
+			"item": [
+				{
+					"name": "Create Razorpay Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"showId\": \"SHOW_OBJECT_ID\",\n  \"seats\": [\"F5\", \"F6\"],\n  \"totalAmount\": 400\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"bookings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Payment & Book Ticket",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access-token",
+								"value": "{{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"razorpay_order_id\": \"order_Ojh73hksb18h\",\n  \"razorpay_payment_id\": \"pay_Hjsd872hasj\",\n  \"razorpay_signature\": \"RAZORPAY_SIGNATURE_HEX\",\n  \"showId\": \"SHOW_OBJECT_ID\",\n  \"seats\": [\"F5\", \"F6\"],\n  \"totalAmount\": 400\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/verify-payment",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"verify-payment"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Razorpay Webhook Callback",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-razorpay-signature",
+								"value": "WEBHOOK_SIGNATURE_HEADER",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"entity\": \"event\",\n  \"account_id\": \"acc_BF41cmq7GsA4aF\",\n  \"event\": \"payment.captured\",\n  \"contains\": [\n    \"payment\"\n  ],\n  \"payload\": {\n    \"payment\": {\n      \"entity\": {\n        \"id\": \"pay_Hjsd872hasj\",\n        \"entity\": \"payment\",\n        \"amount\": 40000,\n        \"currency\": \"INR\",\n        \"status\": \"captured\",\n        \"order_id\": \"order_Ojh73hksb18h\",\n        \"notes\": {\n          \"userId\": \"USER_OBJECT_ID\",\n          \"showId\": \"SHOW_OBJECT_ID\",\n          \"seats\": \"F5,F6\"\n        }\n      }\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/webhook",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"webhook"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

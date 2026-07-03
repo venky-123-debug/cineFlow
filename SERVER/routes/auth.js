@@ -54,11 +54,7 @@ app.post("/admin/register", async (req, res) => {
     if (!utilities.emailAddressPattern.test(email)) throw "Invalid email address"
 
     let existingUser = await User.findOne({ email, role }).lean()
-    if (existingUser) {
-      let data = utilities.cleanMongoDocument(existingUser)
-      delete data.password
-      response.data = data
-    } else {
+    if (existingUser) throw "Admin already exists"
       let newUser = await new User({
         name,
         email,
@@ -68,7 +64,7 @@ app.post("/admin/register", async (req, res) => {
       let data = utilities.cleanMongoDocument(newUser)
       delete data.password
       response.data = data
-    }
+
 
     response.success = true
   } catch (error) {

@@ -2,10 +2,12 @@ const express = require("express")
 const app = express.Router()
 const Booking = require("../models/booking")
 const Show = require("../models/show")
+const User = require("../models/user")
 const utilities = require("../scripts/utils")
 const errorhandler = require("../scripts/error")
 const Razorpay = require("razorpay")
 const crypto = require("crypto")
+const { sendTicketEmail } = require("../scripts/email")
 
 require("dotenv").config()
 const razorpay = new Razorpay({
@@ -25,6 +27,26 @@ app.post("/", async (req, res) => {
 
     const show = await Show.findById(showId)
     if (!show) throw "Show not found"
+
+    // Verify seats are not already booked in the DB
+    if (show.seats && show.seats.length > 0) {
+      const bookedSeats = show.seats.filter(s => s.status === "BOOKED").map(s => s.seatNumber)
+      for (const seat of seats) {
+        if (bookedSeats.includes(seat)) {
+          throw `Seat ${seat} is already booked`
+        }
+      }
+    }
+
+    // Verify user holds the Redis locks for these seats
+    const redisClient = require("../config/redis")
+    for (const seat of seats) {
+      const lockKey = `lock:show:${showId}:seat:${seat}`
+      const lockedBy = await redisClient.get(lockKey)
+      if (lockedBy && lockedBy !== tokenData.id) {
+        throw `Seat ${seat} is locked by another user`
+      }
+    }
 
     // Create Razorpay Order
     const options = {
@@ -77,6 +99,8 @@ app.post("/verify-payment", async (req, res) => {
     const show = await Show.findById(showId)
     if (!show) throw "Show not found"
 
+    const ticketId = `TICKET_${Date.now()}`
+
     // Create Booking with CONFIRM status (payment already verified)
     const booking = await new Booking({
       userId: tokenData.id,
@@ -86,17 +110,54 @@ app.post("/verify-payment", async (req, res) => {
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id, // Store order ID for webhook reference
       status: "CONFIRM",
-      ticketId: `TICKET_${Date.now()}`,
+      ticketId,
     }).save()
 
-    // Update show seat count
-    await Show.findByIdAndUpdate(showId, { $inc: { availableSeats: -seats.length } })
+    // Ensure seat layout is initialized
+    if (!show.seats || show.seats.length === 0) {
+      const generatedSeats = utilities.generateSeatMatrix(show.totalRows || 12, show.seatsPerRow || 15)
+      await Show.findByIdAndUpdate(showId, { $set: { seats: generatedSeats } })
+    }
+
+    // Update show seat count & update individual seat statuses to "BOOKED" and bookedBy
+    await Show.updateOne(
+      { _id: showId },
+      { 
+        $inc: { availableSeats: -seats.length },
+        $set: { 
+          "seats.$[elem].status": "BOOKED", 
+          "seats.$[elem].bookedBy": tokenData.id 
+        } 
+      },
+      { 
+        arrayFilters: [{ "elem.seatNumber": { $in: seats } }] 
+      }
+    )
 
     // Clear Redis seat locks
     const redisClient = require("../config/redis")
     for (const seat of seats) {
       const key = `lock:show:${showId}:seat:${seat}`
       await redisClient.del(key)
+    }
+
+    // Send ticket email
+    const user = await User.findById(tokenData.id).lean()
+    const populatedShow = await Show.findById(showId)
+      .populate("movieId")
+      .populate("theatreId")
+      .lean()
+
+    if (user && populatedShow) {
+      // Trigger async send email
+      sendTicketEmail({
+        email: user.email,
+        movieTitle: populatedShow.movieId?.title || "Movie Show",
+        theatreName: populatedShow.theatreId?.name || "Theatre",
+        seats,
+        showTime: populatedShow.showTime,
+        ticketId,
+      })
     }
 
     response.success = true
@@ -126,13 +187,66 @@ app.post("/webhook", async (req, res) => {
 
     const event = req.body
 
-    if (event.event === "payment.captured" || event.event === "payment.succeeded") {
+    if (event.event === "payment.captured" || event.event === "payment.succeeded" || event.event === "order.paid") {
       const payment = event.payload.payment.entity
-      const notes = payment.notes
+      const orderId = payment.order_id
+      
+      const booking = await Booking.findOne({ orderId })
+      if (booking && booking.status !== "CONFIRM") {
+        booking.status = "CONFIRM"
+        booking.paymentId = payment.id
+        booking.ticketId = booking.ticketId || `TICKET_${Date.now()}`
+        await booking.save()
 
-      // Update booking status or create booking here
-      console.log("Payment Successful:", payment.id, notes)
-      // TODO: Update your Booking model here using notes
+        const show = await Show.findById(booking.showId)
+        if (show) {
+          // Ensure seat layout is initialized
+          if (!show.seats || show.seats.length === 0) {
+            const generatedSeats = utilities.generateSeatMatrix(show.totalRows || 12, show.seatsPerRow || 15)
+            await Show.findByIdAndUpdate(booking.showId, { $set: { seats: generatedSeats } })
+          }
+
+          // Update available seats and set status to BOOKED
+          await Show.updateOne(
+            { _id: booking.showId },
+            {
+              $inc: { availableSeats: -booking.seats.length },
+              $set: {
+                "seats.$[elem].status": "BOOKED",
+                "seats.$[elem].bookedBy": booking.userId
+              }
+            },
+            {
+              arrayFilters: [{ "elem.seatNumber": { $in: booking.seats } }]
+            }
+          )
+
+          // Clear Redis seat locks
+          const redisClient = require("../config/redis")
+          for (const seat of booking.seats) {
+            const key = `lock:show:${booking.showId}:seat:${seat}`
+            await redisClient.del(key)
+          }
+
+          // Send email
+          const user = await User.findById(booking.userId).lean()
+          const populatedShow = await Show.findById(booking.showId)
+            .populate("movieId")
+            .populate("theatreId")
+            .lean()
+
+          if (user && populatedShow) {
+            sendTicketEmail({
+              email: user.email,
+              movieTitle: populatedShow.movieId?.title || "Movie Show",
+              theatreName: populatedShow.theatreId?.name || "Theatre",
+              seats: booking.seats,
+              showTime: populatedShow.showTime,
+              ticketId: booking.ticketId,
+            })
+          }
+        }
+      }
     }
 
     response.success = true

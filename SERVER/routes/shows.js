@@ -137,8 +137,26 @@ app.get("/:id/seats", async (req, res) => {
 
     // Generate seat matrix if not exists
     if (!show.seats || show.seats.length === 0) {
-      show.seats = generateSeatMatrix(show.totalRows || 12, show.seatsPerRow || 15)
+      show.seats = utilities.generateSeatMatrix(show.totalRows || 12, show.seatsPerRow || 15)
     }
+
+    // Get active Redis locks for this show
+    const redisClient = require("../config/redis")
+    const lockKeys = await redisClient.keys(`lock:show:${id}:seat:*`)
+    const lockedSeats = new Set()
+    for (const key of lockKeys) {
+      const parts = key.split(":")
+      const seatNum = parts[parts.length - 1]
+      lockedSeats.add(seatNum)
+    }
+
+    // Apply locks dynamically to the seats returned
+    show.seats = show.seats.map(seat => {
+      if (lockedSeats.has(seat.seatNumber) && seat.status !== "BOOKED") {
+        return { ...seat, status: "LOCKED" }
+      }
+      return seat
+    })
 
     // Group seats by status and category
     const seatStatus = {
@@ -153,9 +171,12 @@ app.get("/:id/seats", async (req, res) => {
     }
 
     show.seats.forEach(seat => {
-      seatStatus[seat.status.toLowerCase()]++
-      if (seat.category && seatStatus.byCategory[seat.category]) {
-        seatStatus.byCategory[seat.category][seat.status.toLowerCase()]++
+      const statusKey = seat.status.toLowerCase()
+      if (seatStatus[statusKey] !== undefined) {
+        seatStatus[statusKey]++
+      }
+      if (seat.category && seatStatus.byCategory[seat.category] && seatStatus.byCategory[seat.category][statusKey] !== undefined) {
+        seatStatus.byCategory[seat.category][statusKey]++
       }
     })
 
@@ -168,7 +189,7 @@ app.get("/:id/seats", async (req, res) => {
       seats: show.seats,
       seatStatus: seatStatus,
       totalSeats: show.seats.length,
-      availableSeats: show.availableSeats,
+      availableSeats: show.seats.filter(s => s.status === "AVAILABLE").length,
       ticketCategories: show.ticketCategories
     }
   } catch (error) {
@@ -178,35 +199,61 @@ app.get("/:id/seats", async (req, res) => {
   }
 })
 
-// Helper function to generate seat matrix
-function generateSeatMatrix(rows, seatsPerRow) {
-  const seats = []
-  const rowLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").slice(0, rows)
-  
-  // Define seat categories based on position
-  const premiumRows = [5, 6, 7] // Middle rows are premium
-  
-  rowLetters.forEach((row, rowIndex) => {
-    for (let col = 1; col <= seatsPerRow; col++) {
-      let category = "ECONOMY"
-      
-      if (premiumRows.includes(rowIndex)) {
-        category = "PREMIUM"
-      } else if (rowIndex >= 3 && rowIndex <= 8) {
-        category = "STANDARD"
-      }
-      
-      seats.push({
-        seatNumber: row + col,
-        category: category,
-        price: category === "PREMIUM" ? 250 : category === "STANDARD" ? 200 : 150,
-        status: "AVAILABLE"
-      })
+//  USER: LOCK SEATS FOR 10 MINUTES
+app.post("/:id/lock", async (req, res) => {
+  let response = { success: false }
+  try {
+    if (!req.headers["access-token"]) throw "No token"
+    const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+
+    const { id } = req.params
+    const { seats } = req.body
+
+    if (!seats || !Array.isArray(seats) || seats.length === 0) {
+      throw "Seats are required and must be an array"
     }
-  })
-  
-  return seats
-}
+
+    const show = await Show.findById(id)
+    if (!show) throw "Show not found"
+
+    // Check if any of these seats are already booked in the database
+    if (show.seats && show.seats.length > 0) {
+      const bookedSeats = show.seats
+        .filter(s => s.status === "BOOKED")
+        .map(s => s.seatNumber)
+      
+      for (const seat of seats) {
+        if (bookedSeats.includes(seat)) {
+          throw `Seat ${seat} is already booked`
+        }
+      }
+    }
+
+    const redisClient = require("../config/redis")
+
+    // Check Redis locks
+    for (const seat of seats) {
+      const lockKey = `lock:show:${id}:seat:${seat}`
+      const lockedBy = await redisClient.get(lockKey)
+      if (lockedBy && lockedBy !== tokenData.id) {
+        throw `Seat ${seat} is currently locked by another user`
+      }
+    }
+
+    // Acquire Redis locks with 10 minutes expiry (600 seconds)
+    for (const seat of seats) {
+      const lockKey = `lock:show:${id}:seat:${seat}`
+      await redisClient.set(lockKey, tokenData.id, { EX: 600 })
+    }
+
+    response.success = true
+    response.message = "Seats locked successfully for 10 minutes"
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
 
 //  ADMIN: CREATE SHOW
 app.post("/", async (req, res) => {

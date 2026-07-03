@@ -101,13 +101,29 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
         booking.ticketId = booking.ticketId || uuidv4()
         await booking.save()
 
-        // Update available seats only if not already updated
         const show = await Show.findById(booking.showId)
-        if (
-          show &&
-          show.availableSeats + booking.seats.length === (await Show.findById(booking.showId)).availableSeats
-        ) {
-          await Show.findByIdAndUpdate(booking.showId, { $inc: { availableSeats: -booking.seats.length } })
+        if (show) {
+          const utilities = require("./scripts/utils")
+          // Ensure seat layout is initialized
+          if (!show.seats || show.seats.length === 0) {
+            const generatedSeats = utilities.generateSeatMatrix(show.totalRows || 12, show.seatsPerRow || 15)
+            await Show.findByIdAndUpdate(booking.showId, { $set: { seats: generatedSeats } })
+          }
+
+          // Update available seats and set status to BOOKED
+          await Show.updateOne(
+            { _id: booking.showId },
+            {
+              $inc: { availableSeats: -booking.seats.length },
+              $set: {
+                "seats.$[elem].status": "BOOKED",
+                "seats.$[elem].bookedBy": booking.userId
+              }
+            },
+            {
+              arrayFilters: [{ "elem.seatNumber": { $in: booking.seats } }]
+            }
+          )
         }
 
         // Clear Redis seat locks
@@ -116,6 +132,27 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
           const key = `lock:show:${booking.showId}:seat:${seat}`
           await redisClient.del(key)
         }
+
+        // Send email
+        const User = require("./models/user")
+        const user = await User.findById(booking.userId).lean()
+        const populatedShow = await Show.findById(booking.showId)
+          .populate("movieId")
+          .populate("theatreId")
+          .lean()
+
+        if (user && populatedShow) {
+          const { sendTicketEmail } = require("./scripts/email")
+          sendTicketEmail({
+            email: user.email,
+            movieTitle: populatedShow.movieId?.title || "Movie Show",
+            theatreName: populatedShow.theatreId?.name || "Theatre",
+            seats: booking.seats,
+            showTime: populatedShow.showTime,
+            ticketId: booking.ticketId,
+          })
+        }
+
         console.log(`Webhook: Booking confirmed with ticket ${booking.ticketId}`)
       } else {
         console.log(`⚠️ Webhook: No booking found for orderId=${orderId}, paymentId=${paymentEntity.id}`)
