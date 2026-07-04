@@ -136,7 +136,7 @@ export default function BookingConfirmation() {
           <p>Transaction ID: {currentBooking.orderId}</p>
           <p>
             Payment Status:{" "}
-            <span className="text-green-500 font-bold">✓ Confirmed</span>
+            <span className="text-green-500 font-bold"> Confirmed</span>
           </p>
         </div>
       </div>

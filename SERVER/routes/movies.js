@@ -207,6 +207,88 @@ app.patch("/:id", async (req, res) => {
   }
 })
 
+//  ADMIN: BULK UPDATE/CREATE SHOWS FOR A MOVIE ACROSS MULTIPLE THEATRES
+app.patch("/:id/bulk-shows", async (req, res) => {
+  let response = { success: false }
+  try {
+    if (!req.headers["access-token"]) throw "No token"
+    const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+    if (tokenData.role !== "ADMIN") throw "Admin access only"
+
+    const movieId = req.params.id
+    const { updates } = req.body
+
+    if (!mongoose.Types.ObjectId.isValid(movieId)) throw "Invalid Movie ID format"
+    if (!Array.isArray(updates) || updates.length === 0) throw "updates array is required"
+
+    const movieExists = await Movie.findById(movieId).lean()
+    if (!movieExists) throw "Movie not found"
+
+    const createdShows = []
+    const updatedShows = []
+
+    for (const item of updates) {
+      const {
+        showId,
+        theatreId,
+        screenNumber,
+        showTime,
+        showDate,
+        availableSeats,
+        totalRows,
+        seatsPerRow,
+        ticketCategories,
+        ...rest
+      } = item
+
+      if (!theatreId) throw "Each update entry must include theatreId"
+      if (!mongoose.Types.ObjectId.isValid(theatreId)) throw "Invalid Theatre ID format"
+
+      const theatreExists = await Theatre.findById(theatreId).lean()
+      if (!theatreExists) throw "Theatre not found"
+
+      const payload = {
+        ...rest,
+        movieId,
+        theatreId,
+        screenNumber: screenNumber || 1,
+        showTime,
+        showDate,
+        availableSeats: availableSeats || theatreExists.totalSeats,
+      }
+
+      if (totalRows !== undefined) payload.totalRows = totalRows
+      if (seatsPerRow !== undefined) payload.seatsPerRow = seatsPerRow
+      if (ticketCategories !== undefined) payload.ticketCategories = ticketCategories
+
+      if (showId) {
+        if (!mongoose.Types.ObjectId.isValid(showId)) throw "Invalid Show ID format"
+        const existingShow = await Show.findOne({ _id: showId, movieId })
+        if (!existingShow) throw "Show not found for this movie"
+
+        const updatedShow = await Show.findByIdAndUpdate(showId, { $set: payload }, { new: true }).lean()
+        updatedShows.push(utilities.cleanMongoDocument(updatedShow))
+      } else {
+        const newShow = await new Show(payload).save()
+        createdShows.push(utilities.cleanMongoDocument(newShow))
+      }
+    }
+
+    response.success = true
+    response.data = {
+      movieId,
+      createdShows,
+      updatedShows,
+      createdCount: createdShows.length,
+      updatedCount: updatedShows.length,
+    }
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
 // //  ADMIN: UPLOAD MOVIE BANNER
 // app.post("/:id/upload-banner", upload.single("banner"), async (req, res) => {
 //   let response = { success: false }

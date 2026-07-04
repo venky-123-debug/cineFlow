@@ -1,10 +1,45 @@
 const express = require("express")
+const https = require("https")
 const app = express.Router()
 const User = require("../models/user")
 const { v4: uuidv4 } = require("uuid")
 const SHA256 = require("crypto-js/sha256")
 const utilities = require("../scripts/utils")
 const errorhandler = require("../scripts/error")
+
+async function verifyGoogleIdToken(idToken) {
+  if (!idToken) throw "Google ID token is required"
+  if (!process.env.GOOGLE_CLIENT_ID) throw "Google OAuth is not configured"
+
+  return new Promise((resolve, reject) => {
+    const url = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`
+    https
+      .get(url, (res) => {
+        let data = ""
+        res.on("data", (chunk) => {
+          data += chunk
+        })
+        res.on("end", () => {
+          try {
+            const payload = JSON.parse(data)
+            if (res.statusCode !== 200) {
+              return reject(payload.error_description || "Invalid Google token")
+            }
+            if (payload.aud !== process.env.GOOGLE_CLIENT_ID) {
+              return reject("Invalid Google client ID")
+            }
+            if (payload.email_verified !== true && payload.email_verified !== "true") {
+              return reject("Google email is not verified")
+            }
+            resolve(payload)
+          } catch (error) {
+            reject("Invalid Google token response")
+          }
+        })
+      })
+      .on("error", reject)
+  })
+}
 
 app.post("/admin/register", async (req, res) => {
   let response = { success: false }
@@ -98,6 +133,62 @@ app.post("/login", async (req, res) => {
 
     let token = await utilities.generateToken(tokenData, process.env.JWT_SECRET, Number(process.env.JWT_EXPIRATION))
     delete data.password
+    response.success = true
+    response.token = token
+    response.data = data
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
+app.post("/google", async (req, res) => {
+  let response = { success: false }
+  try {
+    const { idToken, name, email, picture } = req.body
+    const googleData = await verifyGoogleIdToken(idToken)
+
+    const googleEmail = googleData.email || email
+    if (!googleEmail) throw "Google email is required"
+    if (!utilities.emailAddressPattern.test(googleEmail)) throw "Invalid email address"
+
+    const googleName = googleData.name || name || googleEmail.split("@")[0]
+    const googlePicture = googleData.picture || picture || null
+
+    let thisUser = await User.findOne({ $or: [{ email: googleEmail }, { googleId: googleData.sub }] })
+
+    if (!thisUser) {
+      thisUser = await new User({
+        name: googleName,
+        email: googleEmail,
+        password: SHA256(uuidv4()).toString(),
+        role: "USER",
+        provider: "GOOGLE",
+        googleId: googleData.sub,
+        avatar: googlePicture,
+      }).save()
+    } else {
+      const updates = {}
+      if (!thisUser.googleId) updates.googleId = googleData.sub
+      if (!thisUser.provider) updates.provider = "GOOGLE"
+      if (!thisUser.name && googleName) updates.name = googleName
+      if (!thisUser.avatar && googlePicture) updates.avatar = googlePicture
+      if (Object.keys(updates).length > 0) {
+        thisUser = await User.findByIdAndUpdate(thisUser._id, { $set: updates }, { new: true })
+      }
+    }
+
+    let data = utilities.cleanMongoDocument(thisUser)
+    delete data.password
+
+    let tokenData = {
+      id: data.id,
+      role: data.role,
+    }
+
+    let token = await utilities.generateToken(tokenData, process.env.JWT_SECRET, Number(process.env.JWT_EXPIRATION))
+
     response.success = true
     response.token = token
     response.data = data

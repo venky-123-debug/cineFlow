@@ -8,12 +8,8 @@ const rateLimit = require("express-rate-limit")
 const connectDB = require("./config/db")
 const redisClient = require("./config/redis")
 
-const authRoutes = require("./routes/auth")
-const movieRoutes = require("./routes/movies")
-const theatreRoutes = require("./routes/theatres")
-const showRoutes = require("./routes/shows")
-const bookingRoutes = require("./routes/bookings")
 const Booking = require("./models/booking")
+const api = require("./routes/api")
 const Show = require("./models/show")
 const crypto = require("crypto")
 const { v4: uuidv4 } = require("uuid")
@@ -171,11 +167,7 @@ const limiter = rateLimit({
 })
 app.use(limiter)
 
-app.use("/api/auth", authRoutes)
-app.use("/api/movies", movieRoutes)
-app.use("/api/theatres", theatreRoutes)
-app.use("/api/shows", showRoutes)
-app.use("/api/bookings", bookingRoutes)
+app.use("/", api)
 
 app.get("/", (req, res) => {
   res.json({ success: true, message: "CineFlow Movie Booking API is running" })

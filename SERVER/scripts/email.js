@@ -6,7 +6,7 @@ const path = require("path")
 let canvasLib = null
 try {
   canvasLib = require("canvas")
-  console.log("✓ Node-canvas library loaded successfully.")
+  console.log(" Node-canvas library loaded successfully.")
 } catch (e) {
   console.warn(" Node-canvas is not installed or failed to compile. Falling back to SVG ticket generation.")
 }
@@ -185,7 +185,8 @@ async function sendTicketEmail({ email, movieTitle, theatreName, seats, showTime
 
     // 4. Send Email
     const mailOptions = {
-      from: `"CineFlow Booking" <${process.env.EMAIL_USER || "no-reply@cineflow.com"}>`,
+      from: `"CineFlow Booking" < "no-reply@cineflow.com">`,
+      // from: `"CineFlow Booking" <${process.env.EMAIL_USER || "no-reply@cineflow.com"}>`,
       to: email,
       subject: `CineFlow Ticket Confirmed: ${movieTitle}`,
       html: emailHtml,
@@ -193,12 +194,12 @@ async function sendTicketEmail({ email, movieTitle, theatreName, seats, showTime
     }
 
     const info = await transporter.sendMail(mailOptions)
-    console.log(`✓ Email sent successfully to ${email}. Message ID: ${info.messageId}`)
+    console.log(` Email sent successfully to ${email}. Message ID: ${info.messageId}`)
 
     // If using Ethereal, log preview link
     const previewUrl = nodemailer.getTestMessageUrl(info)
     if (previewUrl) {
-      console.log(`✉️ Ethereal Email Preview URL: ${previewUrl}`)
+      console.log(`Ethereal Email Preview URL: ${previewUrl}`)
       return { success: true, previewUrl }
     }
 

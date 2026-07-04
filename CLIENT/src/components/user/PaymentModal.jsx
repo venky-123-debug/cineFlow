@@ -172,7 +172,7 @@ export default function PaymentModal() {
               key={amenity}
               className="bg-gray-800 p-3 rounded text-center text-gray-300 text-sm"
             >
-              ✓ {amenity}
+               {amenity}
             </div>
           ))}
         </div>
