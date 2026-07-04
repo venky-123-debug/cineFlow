@@ -5,7 +5,11 @@ SERVER/UPLOADS/
 SERVER/CURL_README.md
 SERVER/PAYMENT_FLOW_GUIDE.md
 
-CLIENT/node_modules/
-CLIENT/package-lock.json
-CLIENT/public/assets/
-CLIENT/dist/
+CLIENT/admin/node_modules/
+CLIENT/admin/package-lock.json
+CLIENT/admin/public/assets/
+CLIENT/admin/dist/
+CLIENT/user/node_modules/
+CLIENT/user/package-lock.json
+CLIENT/user/public/assets/
+CLIENT/user/dist/
