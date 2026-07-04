@@ -10,6 +10,10 @@ const errorhandler = require("../scripts/error")
 app.get("/", async (req, res) => {
   let response = { success: false }
   try {
+    if (!req.headers["access-token"]) throw "No token"
+    const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+    if (tokenData.role !== "ADMIN" && tokenData.role !== "USER") throw "Invalid access"
+
     const { movieId, theatreId, city } = req.query
 
     const query = {}
@@ -39,26 +43,30 @@ app.get("/", async (req, res) => {
   }
 })
 
-//  GET SHOWS SCHEDULE (BookMyShow Style: Movie -> City -> Date -> Theatres -> Shows)
+//  GET SHOWS SCHEDULE
 app.get("/schedule", async (req, res) => {
   let response = { success: false }
   try {
+    if (!req.headers["access-token"]) throw "No token"
+    const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+    if (tokenData.role !== "ADMIN" && tokenData.role !== "USER") throw "Invalid access"
+
     const { movieId, city, date } = req.query
 
     if (!movieId) throw "movieId is required"
     if (!city) throw "city is required"
 
-    // 1. Find all theatres in the selected city
+    // Find all theatres in the selected city
     const theatres = await Theatre.find({ city: { $regex: city, $options: "i" } }).lean()
     const theatreIds = theatres.map((t) => t._id)
 
-    // 2. Build show query
+    // Build show query
     const showQuery = {
       movieId: movieId,
       theatreId: { $in: theatreIds },
     }
 
-    // 3. Filter by date if provided (defaulting to today's date if omitted)
+    // Filter by date if provided (defaulting to today's date if omitted)
     const targetDate = date ? new Date(date) : new Date()
     const startOfDay = new Date(targetDate)
     startOfDay.setHours(0, 0, 0, 0)
@@ -68,13 +76,13 @@ app.get("/schedule", async (req, res) => {
     // Using both showDate and showTime range to ensure match
     showQuery.$or = [
       { showDate: { $gte: startOfDay, $lte: endOfDay } },
-      { showTime: { $gte: startOfDay, $lte: endOfDay } }
+      { showTime: { $gte: startOfDay, $lte: endOfDay } },
     ]
 
-    // 4. Find shows sorted by show time
+    // Find shows sorted by show time
     const shows = await Show.find(showQuery).lean().sort({ showTime: 1 })
 
-    // 5. Group shows by theatre
+    // Group shows by theatre
     const theatreMap = {}
     theatres.forEach((t) => {
       theatreMap[t._id.toString()] = {
@@ -106,6 +114,10 @@ app.get("/schedule", async (req, res) => {
 app.get("/:id", async (req, res) => {
   let response = { success: false }
   try {
+    if (!req.headers["access-token"]) throw "No token"
+    const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+    if (tokenData.role !== "ADMIN" && tokenData.role !== "USER") throw "Invalid access"
+
     const show = await Show.findById(req.params.id)
       .populate("movieId", "title poster duration genre")
       .populate("theatreId", "name location city totalSeats")
@@ -128,10 +140,7 @@ app.get("/:id/seats", async (req, res) => {
   try {
     const { id } = req.params
 
-    const show = await Show.findById(id)
-      .populate("movieId", "title")
-      .populate("theatreId", "name location city")
-      .lean()
+    const show = await Show.findById(id).populate("movieId", "title").populate("theatreId", "name location city").lean()
 
     if (!show) throw "Show not found"
 
@@ -151,7 +160,7 @@ app.get("/:id/seats", async (req, res) => {
     }
 
     // Apply locks dynamically to the seats returned
-    show.seats = show.seats.map(seat => {
+    show.seats = show.seats.map((seat) => {
       if (lockedSeats.has(seat.seatNumber) && seat.status !== "BOOKED") {
         return { ...seat, status: "LOCKED" }
       }
@@ -166,16 +175,20 @@ app.get("/:id/seats", async (req, res) => {
       byCategory: {
         PREMIUM: { available: 0, booked: 0, locked: 0 },
         STANDARD: { available: 0, booked: 0, locked: 0 },
-        ECONOMY: { available: 0, booked: 0, locked: 0 }
-      }
+        ECONOMY: { available: 0, booked: 0, locked: 0 },
+      },
     }
 
-    show.seats.forEach(seat => {
+    show.seats.forEach((seat) => {
       const statusKey = seat.status.toLowerCase()
       if (seatStatus[statusKey] !== undefined) {
         seatStatus[statusKey]++
       }
-      if (seat.category && seatStatus.byCategory[seat.category] && seatStatus.byCategory[seat.category][statusKey] !== undefined) {
+      if (
+        seat.category &&
+        seatStatus.byCategory[seat.category] &&
+        seatStatus.byCategory[seat.category][statusKey] !== undefined
+      ) {
         seatStatus.byCategory[seat.category][statusKey]++
       }
     })
@@ -189,8 +202,8 @@ app.get("/:id/seats", async (req, res) => {
       seats: show.seats,
       seatStatus: seatStatus,
       totalSeats: show.seats.length,
-      availableSeats: show.seats.filter(s => s.status === "AVAILABLE").length,
-      ticketCategories: show.ticketCategories
+      availableSeats: show.seats.filter((s) => s.status === "AVAILABLE").length,
+      ticketCategories: show.ticketCategories,
     }
   } catch (error) {
     response = await errorhandler(error, response)
@@ -205,6 +218,7 @@ app.post("/:id/lock", async (req, res) => {
   try {
     if (!req.headers["access-token"]) throw "No token"
     const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+    if (tokenData.role !== "USER") throw "User access only"
 
     const { id } = req.params
     const { seats } = req.body
@@ -218,10 +232,8 @@ app.post("/:id/lock", async (req, res) => {
 
     // Check if any of these seats are already booked in the database
     if (show.seats && show.seats.length > 0) {
-      const bookedSeats = show.seats
-        .filter(s => s.status === "BOOKED")
-        .map(s => s.seatNumber)
-      
+      const bookedSeats = show.seats.filter((s) => s.status === "BOOKED").map((s) => s.seatNumber)
+
       for (const seat of seats) {
         if (bookedSeats.includes(seat)) {
           throw `Seat ${seat} is already booked`
@@ -243,7 +255,7 @@ app.post("/:id/lock", async (req, res) => {
     // Acquire Redis locks with 10 minutes expiry (600 seconds)
     for (const seat of seats) {
       const lockKey = `lock:show:${id}:seat:${seat}`
-      await redisClient.set(lockKey, tokenData.id, { EX: 600 })
+      await redisClient.setEx(lockKey, tokenData.id, Number(process.env.SEAT_LOCK_DURATION || 600)) // Default to 10 minutes if not set
     }
 
     response.success = true
@@ -272,9 +284,9 @@ app.post("/", async (req, res) => {
 
     // Validate movie and theatre exist
     const movieExists = await Movie.findById(movieId)
-    const theatreExists = await Theatre.findById(theatreId)
-
     if (!movieExists) throw "Movie not found"
+
+    const theatreExists = await Theatre.findById(theatreId)
     if (!theatreExists) throw "Theatre not found"
 
     let newShow = await new Show({
