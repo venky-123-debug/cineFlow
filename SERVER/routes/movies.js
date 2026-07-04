@@ -9,7 +9,6 @@ const errorhandler = require("../scripts/error")
 const upload = require("../middleware/upload")
 const crypto = require("crypto")
 const fs = require("fs").promises
-const path = require("path")
 
 // Helper function to calculate file hash and save in uploads directory using fs.promises
 async function handleImageUpload(file) {
@@ -17,15 +16,16 @@ async function handleImageUpload(file) {
 
   // Calculate SHA-256 hash of the buffer
   const fileHash = crypto.createHash("sha256").update(file.buffer).digest("hex")
-  const ext = path.extname(file.originalname) || ".jpg"
-  const filename = `${fileHash}${ext}`
 
-  const uploadDir = path.join(__dirname, "../uploads/movies")
+  let uploadDir = process.env.UPLOADS_PATH || "UPLOADS/"
+  if (!uploadDir.endsWith("/") && !uploadDir.endsWith("\\")) {
+    uploadDir += "/"
+  }
+
   // Ensure the uploads directory exists using fs.promises
   await fs.mkdir(uploadDir, { recursive: true })
 
-  const filePath = path.join(uploadDir, filename)
-  const relativeUrl = `/api/files/${fileHash}`
+  const filePath = `${uploadDir}${fileHash}`
 
   try {
     // Check if the file already exists using fs.promises.access
@@ -37,7 +37,7 @@ async function handleImageUpload(file) {
     console.log(`Saved new file with hash ${fileHash}`)
   }
 
-  return { filename, imageUrl: relativeUrl, fileHash }
+  return { fileHash, imageUrl: `/api/files/${fileHash}` }
 }
 
 //  GET ALL MOVIES
@@ -189,7 +189,8 @@ app.patch("/:id", upload.single("banner"), async (req, res) => {
     const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
     if (tokenData.role !== "ADMIN") throw "Admin access only"
 
-    const { title, description, duration, genre, banner, trailerUrl, releaseDate, language, rating, censorRating } = req.body
+    const { title, description, duration, genre, banner, trailerUrl, releaseDate, language, rating, censorRating } =
+      req.body
 
     const updateData = {}
     if (title !== undefined) updateData.title = title

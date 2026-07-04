@@ -25,9 +25,6 @@ app.use(helmet())
 app.use(cors())
 app.use(morgan("dev"))
 
-// Serve static files from uploads directory
-app.use("/uploads", express.static("uploads"))
-
 app.get("/razorpay/redirect", (req, res) => {
   const {
     razorpay_payment_id,
@@ -160,7 +157,6 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
 })
 
 app.use(express.json({ limit: "10mb" }))
-app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
 // const limiter = rateLimit({
 //   windowMs: 15 * 60 * 1000,

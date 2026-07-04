@@ -8,9 +8,21 @@ import SecureImage from "../components/SecureImage";
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  
+
   const [bannerFile, setBannerFile] = useState(null);
-  
+  const [bannerPreview, setBannerPreview] = useState("");
+
+  useEffect(() => {
+    if (!bannerFile) {
+      setBannerPreview("");
+      return;
+    }
+    const url = URL.createObjectURL(bannerFile);
+    setBannerPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [bannerFile]);
+
+
   // Tab State: "dashboard", "movies", "theatres", "shows", "bookings"
   const [activeTab, setActiveTab] = useState("dashboard");
 
@@ -30,7 +42,7 @@ export default function AdminDashboard() {
   // Form States (Modal)
   const [showModal, setShowModal] = useState(false); // false, "addMovie", "editMovie", "addTheatre", "editTheatre", "addShow", "editShow"
   const [currentEditId, setCurrentEditId] = useState("");
-  
+
   // Modal Payload templates
   const [movieForm, setMovieForm] = useState({
     title: "",
@@ -81,12 +93,9 @@ export default function AdminDashboard() {
 
     try {
       if (activeTab === "dashboard") {
-        const statsRes = await axios.get(
-          "/api/bookings/stats",
-          {
-            headers: { "access-token": token },
-          },
-        );
+        const statsRes = await axios.get("/api/bookings/stats", {
+          headers: { "access-token": token },
+        });
         if (statsRes.data.success) {
           setStats(statsRes.data.data);
         }
@@ -99,13 +108,10 @@ export default function AdminDashboard() {
           setMovies(moviesRes.data.data.movies || []);
         }
       } else if (activeTab === "theatres") {
-        const theatresRes = await axios.get(
-          "/api/theatres",
-          {
-            headers: { "access-token": token },
-            params: { limit: 100 },
-          },
-        );
+        const theatresRes = await axios.get("/api/theatres", {
+          headers: { "access-token": token },
+          params: { limit: 100 },
+        });
         if (theatresRes.data.success) {
           setTheatres(theatresRes.data.data.data || []);
         }
@@ -129,13 +135,10 @@ export default function AdminDashboard() {
         if (theatresRes.data.success)
           setTheatres(theatresRes.data.data.data || []);
       } else if (activeTab === "bookings") {
-        const bookingsRes = await axios.get(
-          "/api/bookings",
-          {
-            headers: { "access-token": token },
-            params: { limit: 100 },
-          },
-        );
+        const bookingsRes = await axios.get("/api/bookings", {
+          headers: { "access-token": token },
+          params: { limit: 100 },
+        });
         if (bookingsRes.data.success) {
           setBookings(bookingsRes.data.data.bookings || []);
         }
@@ -219,22 +222,18 @@ export default function AdminDashboard() {
       let res;
       if (showModal === "addMovie") {
         res = await axios.post("/api/movies", formData, {
-          headers: { 
+          headers: {
             "access-token": token,
-            "Content-Type": "multipart/form-data"
+            "Content-Type": "multipart/form-data",
           },
         });
       } else {
-        res = await axios.patch(
-          `/api/movies/${currentEditId}`,
-          formData,
-          {
-            headers: { 
-              "access-token": token,
-              "Content-Type": "multipart/form-data"
-            },
+        res = await axios.patch(`/api/movies/${currentEditId}`, formData, {
+          headers: {
+            "access-token": token,
+            "Content-Type": "multipart/form-data",
           },
-        );
+        });
       }
 
       if (res.data.success) {
@@ -277,13 +276,9 @@ export default function AdminDashboard() {
           headers: { "access-token": token },
         });
       } else {
-        res = await axios.patch(
-          `/api/theatres/${currentEditId}`,
-          payload,
-          {
-            headers: { "access-token": token },
-          },
-        );
+        res = await axios.patch(`/api/theatres/${currentEditId}`, payload, {
+          headers: { "access-token": token },
+        });
       }
 
       if (res.data.success) {
@@ -322,13 +317,9 @@ export default function AdminDashboard() {
           headers: { "access-token": token },
         });
       } else {
-        res = await axios.patch(
-          `/api/shows/${currentEditId}`,
-          payload,
-          {
-            headers: { "access-token": token },
-          },
-        );
+        res = await axios.patch(`/api/shows/${currentEditId}`, payload, {
+          headers: { "access-token": token },
+        });
       }
 
       if (res.data.success) {
@@ -426,7 +417,7 @@ export default function AdminDashboard() {
           >
             Dashboard Stats
           </button>
-          
+
           <button
             onClick={() => setActiveTab("movies")}
             className={`w-full text-left px-4 py-3 rounded-xl border font-bold text-sm transition-all ${
@@ -437,7 +428,7 @@ export default function AdminDashboard() {
           >
             Manage Movies
           </button>
-          
+
           <button
             onClick={() => setActiveTab("theatres")}
             className={`w-full text-left px-4 py-3 rounded-xl border font-bold text-sm transition-all ${
@@ -448,7 +439,7 @@ export default function AdminDashboard() {
           >
             Manage Theatres
           </button>
-          
+
           <button
             onClick={() => setActiveTab("shows")}
             className={`w-full text-left px-4 py-3 rounded-xl border font-bold text-sm transition-all ${
@@ -459,7 +450,7 @@ export default function AdminDashboard() {
           >
             Manage Shows
           </button>
-          
+
           <button
             onClick={() => setActiveTab("bookings")}
             className={`w-full text-left px-4 py-3 rounded-xl border font-bold text-sm transition-all ${
@@ -1195,22 +1186,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-
-                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
-                      Banner URL
-                    </label>
-                    <input
-                      type="text"
-                      value={movieForm.banner}
-                      onChange={(e) =>
-                        setMovieForm({ ...movieForm, banner: e.target.value })
-                      }
-                      placeholder="e.g. https://domain.com/banner.jpg"
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                       Upload Banner File
@@ -1222,6 +1198,28 @@ export default function AdminDashboard() {
                       className="w-full text-xs text-gray-405 file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-black file:bg-amber-500/10 file:text-amber-400 hover:file:bg-amber-500/20 cursor-pointer border border-slate-800 p-1 bg-slate-950 rounded-lg"
                     />
                   </div>
+                  {(bannerPreview || movieForm.banner) && (
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
+                        Banner Preview
+                      </label>
+                      <div className="border border-slate-800 rounded-lg overflow-hidden bg-slate-950 p-2 flex items-center justify-center aspect-video w-full">
+                        {bannerPreview ? (
+                          <img
+                            src={bannerPreview}
+                            alt="Banner Preview"
+                            className="max-h-full max-w-full object-contain rounded"
+                          />
+                        ) : (
+                          <SecureImage
+                            src={movieForm.banner}
+                            alt="Current Banner"
+                            className="max-h-full max-w-full object-contain rounded"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>

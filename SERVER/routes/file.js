@@ -4,7 +4,10 @@ const app = express.Router()
 const errorhandler = require("../scripts/error")
 const utilities = require("../scripts/utils")
 
-const uploadDir = "./uploads/movies"
+let uploadDir = process.env.UPLOADS_PATH || "UPLOADS/"
+if (!uploadDir.endsWith("/") && !uploadDir.endsWith("\\")) {
+  uploadDir += "/"
+}
 
 async function findMovieFile(fileHash) {
   const entries = await fs.readdir(uploadDir)
@@ -33,8 +36,8 @@ app.get("/:fileHash", async (req, res) => {
 
     if (!filename) throw "File not found"
 
-    const filePath = `${uploadDir}/${filename}`
-    
+    const filePath = `${uploadDir}${filename}`
+
     // Manually extract file extension without using path module
     const dotIndex = filename.lastIndexOf(".")
     const ext = dotIndex !== -1 ? filename.slice(dotIndex).toLowerCase() : ""
