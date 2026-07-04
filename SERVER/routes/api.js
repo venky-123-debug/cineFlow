@@ -5,7 +5,7 @@ const authRoutes = require("./auth")
 const movieRoutes = require("./movies")
 const theatreRoutes = require("./theatres")
 const showRoutes = require("./shows")
-const bookingRoutes = require("./auth")
+const bookingRoutes = require("./bookings")
 const fileRoutes = require("./file")
 
 app.use("/api/auth", authRoutes)

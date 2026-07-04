@@ -15,9 +15,13 @@ function ProtectedRoute({ children }) {
 }
 
 export default function App() {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={
+        isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />
+      } />
       <Route path="/" element={<ProtectedRoute><MoviesPage /></ProtectedRoute>} />
       <Route path="/movie/:movieId" element={<ProtectedRoute><MovieDetailPage /></ProtectedRoute>} />
       <Route path="/seat/:showId" element={<ProtectedRoute><SeatPage /></ProtectedRoute>} />

@@ -3,6 +3,7 @@ const path = require("path")
 const fs = require("fs").promises
 const app = express.Router()
 const errorhandler = require("../scripts/error")
+const utilities = require("../scripts/utils")
 
 const uploadDir = path.join(__dirname, "../uploads/movies")
 

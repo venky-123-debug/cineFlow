@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@layer base {
+  body {
+    @apply bg-slate-900 text-white font-sans m-0;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
