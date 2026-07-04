@@ -117,12 +117,12 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
               $inc: { availableSeats: -booking.seats.length },
               $set: {
                 "seats.$[elem].status": "BOOKED",
-                "seats.$[elem].bookedBy": booking.userId
-              }
+                "seats.$[elem].bookedBy": booking.userId,
+              },
             },
             {
-              arrayFilters: [{ "elem.seatNumber": { $in: booking.seats } }]
-            }
+              arrayFilters: [{ "elem.seatNumber": { $in: booking.seats } }],
+            },
           )
         }
 
@@ -136,10 +136,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
         // Send email
         const User = require("./models/user")
         const user = await User.findById(booking.userId).lean()
-        const populatedShow = await Show.findById(booking.showId)
-          .populate("movieId")
-          .populate("theatreId")
-          .lean()
+        const populatedShow = await Show.findById(booking.showId).populate("movieId").populate("theatreId").lean()
 
         if (user && populatedShow) {
           const { sendTicketEmail } = require("./scripts/email")
@@ -155,7 +152,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
 
         console.log(`Webhook: Booking confirmed with ticket ${booking.ticketId}`)
       } else {
-        console.log(`⚠️ Webhook: No booking found for orderId=${orderId}, paymentId=${paymentEntity.id}`)
+        console.log(` Webhook: No booking found for orderId=${orderId}, paymentId=${paymentEntity.id}`)
       }
     } catch (err) {
       console.error("Error processing Razorpay webhook:", err)
@@ -185,10 +182,14 @@ app.get("/", (req, res) => {
 })
 
 const start = async () => {
-  await connectDB()
-  await redisClient.connect()
-  console.log("Redis Connected")
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+  try {
+    await connectDB()
+    await redisClient.connect()
+    console.log("Redis Connected")
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 start()

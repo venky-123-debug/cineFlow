@@ -33,28 +33,30 @@ module.exports.cleanMongoDocument = (doc) => {
 module.exports.generateSeatMatrix = (rows, seatsPerRow) => {
   const seats = []
   const rowLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").slice(0, rows)
-  
+
   // Define seat categories based on position
   const premiumRows = [5, 6, 7] // Middle rows are premium
-  
+
+  // Middle rows are premium
+
   rowLetters.forEach((row, rowIndex) => {
     for (let col = 1; col <= seatsPerRow; col++) {
       let category = "ECONOMY"
-      
+
       if (premiumRows.includes(rowIndex)) {
         category = "PREMIUM"
       } else if (rowIndex >= 3 && rowIndex <= 8) {
         category = "STANDARD"
       }
-      
+
       seats.push({
         seatNumber: row + col,
         category: category,
         price: category === "PREMIUM" ? 250 : category === "STANDARD" ? 200 : 150,
-        status: "AVAILABLE"
+        status: "AVAILABLE",
       })
     }
   })
-  
+
   return seats
 }

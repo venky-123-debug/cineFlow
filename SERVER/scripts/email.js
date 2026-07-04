@@ -8,7 +8,7 @@ try {
   canvasLib = require("canvas")
   console.log("✓ Node-canvas library loaded successfully.")
 } catch (e) {
-  console.warn("⚠️ Node-canvas is not installed or failed to compile. Falling back to SVG ticket generation.")
+  console.warn(" Node-canvas is not installed or failed to compile. Falling back to SVG ticket generation.")
 }
 
 /**
@@ -23,13 +23,13 @@ async function sendTicketEmail({ email, movieTitle, theatreName, seats, showTime
       seats: seats.join(", "),
       showTime: new Date(showTime).toLocaleString(),
     })
-    
+
     const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
       margin: 1,
       color: {
         dark: "#1e1e24",
-        light: "#ffffff"
-      }
+        light: "#ffffff",
+      },
     })
 
     const showTimeStr = new Date(showTime).toLocaleString()

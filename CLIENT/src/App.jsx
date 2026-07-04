@@ -15,14 +15,14 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import AdminLayout       from "./components/admin/AdminLayout";
 import Dashboard         from "./components/admin/Dashboard";
 import MovieManagement   from "./components/admin/MovieManagement";
-import TheatreManagement from "./components/admin/TheatreManagement";
+// import TheatreManagement from "./components/admin/TheatreManagement";
 import ShowManagement    from "./components/admin/ShowManagement";
-import BookingsManagement from "./components/admin/BookingsManagement";
+// import BookingsManagement from "./components/admin/BookingsManagement";
 
 // User
 import Navbar             from "./components/common/Navbar";
 import HomePage           from "./components/user/HomePage";
-import MovieDetailPage    from "./components/user/MovieDetailPage";
+// import MovieDetailPage    from "./components/user/MovieDetailPage";
 import SeatSelection      from "./components/user/SeatSelection";
 import PaymentModal       from "./components/user/PaymentModal";
 import BookingConfirmation from "./components/user/BookingConfirmation";
@@ -59,9 +59,9 @@ export default function App() {
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="movies"    element={<MovieManagement />} />
-          <Route path="theatres"  element={<TheatreManagement />} />
+          {/* <Route path="theatres"  element={<TheatreManagement />} /> */}
           <Route path="shows"     element={<ShowManagement />} />
-          <Route path="bookings"  element={<BookingsManagement />} />
+          {/* <Route path="bookings"  element={<BookingsManagement />} /> */}
           <Route path="*"         element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
 
@@ -70,7 +70,7 @@ export default function App() {
           element={<ProtectedRoute requiredRole="USER"><UserLayout><HomePage /></UserLayout></ProtectedRoute>}
         />
         <Route path="/movie/:movieId"
-          element={<ProtectedRoute requiredRole="USER"><UserLayout><MovieDetailPage /></UserLayout></ProtectedRoute>}
+          // element={<ProtectedRoute requiredRole="USER"><UserLayout><MovieDetailPage /></UserLayout></ProtectedRoute>}
         />
         <Route path="/seats/:showId"
           element={<ProtectedRoute requiredRole="USER"><UserLayout><SeatSelection /></UserLayout></ProtectedRoute>}

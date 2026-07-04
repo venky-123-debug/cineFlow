@@ -136,7 +136,7 @@ export default function FileUpload({
       {/* Error Message */}
       {error && (
         <div className="bg-red-900 bg-opacity-50 border border-red-700 text-red-200 p-3 rounded text-sm">
-          ⚠️ {error}
+           {error}
         </div>
       )}
     </div>

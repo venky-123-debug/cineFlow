@@ -6,6 +6,37 @@ const SHA256 = require("crypto-js/sha256")
 const utilities = require("../scripts/utils")
 const errorhandler = require("../scripts/error")
 
+app.post("/admin/register", async (req, res) => {
+  let response = { success: false }
+  try {
+    const { name, email, password, role } = req.body
+
+    if (!name || !email || !password) throw "All fields are required"
+    if (!role || role !== "ADMIN") throw "Invalid role"
+
+    if (!utilities.emailAddressPattern.test(email)) throw "Invalid email address"
+
+    let existingUser = await User.findOne({ email, role }).lean()
+    if (existingUser) throw "Admin already exists, Cannot have more than one admin."
+
+    let newUser = await new User({
+      name,
+      email,
+      password: SHA256(password).toString(),
+      role,
+    }).save()
+
+    let data = utilities.cleanMongoDocument(newUser)
+    delete data.password
+    response.data = data
+
+    response.success = true
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
 app.post("/user/signup", async (req, res) => {
   let response = { success: false }
   try {
@@ -36,36 +67,6 @@ app.post("/user/signup", async (req, res) => {
       delete data.password
       response.data = data
     }
-    response.success = true
-  } catch (error) {
-    response = await errorhandler(error, response)
-  } finally {
-    res.json(response)
-  }
-})
-
-app.post("/admin/register", async (req, res) => {
-  let response = { success: false }
-  try {
-    const { name, email, password, role } = req.body
-
-    if (!name || !email || !password) throw "All fields are required"
-    if (!role || role !== "ADMIN") throw "Invalid role"
-    if (!utilities.emailAddressPattern.test(email)) throw "Invalid email address"
-
-    let existingUser = await User.findOne({ email, role }).lean()
-    if (existingUser) throw "Admin already exists"
-      let newUser = await new User({
-        name,
-        email,
-        password: SHA256(password).toString(),
-        role,
-      }).save()
-      let data = utilities.cleanMongoDocument(newUser)
-      delete data.password
-      response.data = data
-
-
     response.success = true
   } catch (error) {
     response = await errorhandler(error, response)

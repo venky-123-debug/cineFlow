@@ -1,7 +1,9 @@
-const errorhandler = async (error, response) => {
+const errorHandler = (error, response = {}) => {
   console.error(error)
-  response.message = typeof error === "string" ? error : error.message || "Internal Server Error"
+
+  response.message = typeof error === "string" ? error : error?.message || "Internal Server Error"
+
   return response
 }
 
-module.exports = errorhandler
+module.exports = errorHandler
