@@ -13,7 +13,7 @@ export default function Header({ selectedCity, onCityChange, searchQuery, onSear
     const fetchCities = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/theatres/cities', {
+        const res = await axios.get('/api/theatres/cities', {
           headers: { 'access-token': token },
         });
         if (res.data.success && res.data.data?.length > 0) {

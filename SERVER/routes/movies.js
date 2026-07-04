@@ -12,7 +12,7 @@ const fs = require("fs").promises
 const path = require("path")
 
 // Helper function to calculate file hash and save in uploads directory using fs.promises
-async function handleBannerUpload(file) {
+async function handleImageUpload(file) {
   if (!file) return null
 
   // Calculate SHA-256 hash of the buffer
@@ -25,7 +25,7 @@ async function handleBannerUpload(file) {
   await fs.mkdir(uploadDir, { recursive: true })
 
   const filePath = path.join(uploadDir, filename)
-  const relativeUrl = `/uploads/movies/${filename}`
+  const relativeUrl = `/api/files/${fileHash}`
 
   try {
     // Check if the file already exists using fs.promises.access
@@ -37,7 +37,7 @@ async function handleBannerUpload(file) {
     console.log(`Saved new file with hash ${fileHash}`)
   }
 
-  return { filename, bannerUrl: relativeUrl, fileHash }
+  return { filename, imageUrl: relativeUrl, fileHash }
 }
 
 //  GET ALL MOVIES
@@ -133,15 +133,15 @@ app.get("/:id", async (req, res) => {
   }
 })
 
-//  ADMIN: CREATE MOVIE (with optional banner upload)
-app.post("/", upload.single("banner"), async (req, res) => {
+//  ADMIN: CREATE MOVIE (with optional banner & poster upload)
+app.post("/", upload.fields([{ name: "poster", maxCount: 1 }, { name: "banner", maxCount: 1 }]), async (req, res) => {
   let response = { success: false }
   try {
     if (!req.headers["access-token"]) throw "No token"
     const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
     if (tokenData.role !== "ADMIN") throw "Admin access only"
 
-    const { title, description, duration, genre, poster, trailerUrl, releaseDate, language, rating, censorRating } =
+    const { title, description, duration, genre, poster, banner, trailerUrl, releaseDate, language, rating, censorRating } =
       req.body
 
     if (!title || !description || !duration || !language) throw "Title, description, duration and language are required"
@@ -150,12 +150,18 @@ app.post("/", upload.single("banner"), async (req, res) => {
     let thisMovie = await Movie.findOne({ title }).lean()
     if (thisMovie) throw "Movie already exists"
 
-    // Handle banner upload using memory storage & file hashing with fs.promises
-    let bannerUrl = null
-    if (req.file) {
-      const uploadResult = await handleBannerUpload(req.file)
-      if (uploadResult) {
-        bannerUrl = uploadResult.bannerUrl
+    // Process uploads
+    let posterUrl = poster || null
+    let bannerUrl = banner || null
+
+    if (req.files) {
+      if (req.files.poster && req.files.poster[0]) {
+        const uploadResult = await handleImageUpload(req.files.poster[0])
+        if (uploadResult) posterUrl = uploadResult.imageUrl
+      }
+      if (req.files.banner && req.files.banner[0]) {
+        const uploadResult = await handleImageUpload(req.files.banner[0])
+        if (uploadResult) bannerUrl = uploadResult.imageUrl
       }
     }
 
@@ -164,7 +170,7 @@ app.post("/", upload.single("banner"), async (req, res) => {
       description,
       duration,
       genre: genre ? (Array.isArray(genre) ? genre : [genre]) : [],
-      poster,
+      poster: posterUrl,
       banner: bannerUrl,
       trailerUrl,
       releaseDate,
@@ -176,7 +182,7 @@ app.post("/", upload.single("banner"), async (req, res) => {
     newMovie = utilities.cleanMongoDocument(newMovie)
     response.success = true
     response.data = newMovie
-    response.message = "Movie created successfully" + (bannerUrl ? " with banner" : "")
+    response.message = "Movie created successfully"
   } catch (error) {
     response = await errorhandler(error, response)
   } finally {
@@ -184,22 +190,56 @@ app.post("/", upload.single("banner"), async (req, res) => {
   }
 })
 
-//  ADMIN: UPDATE MOVIE
-app.patch("/:id", async (req, res) => {
+app.patch("/:id", upload.fields([{ name: "poster", maxCount: 1 }, { name: "banner", maxCount: 1 }]), async (req, res) => {
   let response = { success: false }
   try {
     if (!req.headers["access-token"]) throw "No token"
     const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
     if (tokenData.role !== "ADMIN") throw "Admin access only"
-    if (req.body.rating && (req.body.rating < 0 || req.body.rating > 10)) throw "Rating must be between 0 and 10"
 
-    let updatedMovie = await Movie.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true }).lean()
+    const { title, description, duration, genre, poster, banner, trailerUrl, releaseDate, language, rating, censorRating } = req.body
+
+    const updateData = {}
+    if (title !== undefined) updateData.title = title
+    if (description !== undefined) updateData.description = description
+    if (duration !== undefined) updateData.duration = Number(duration)
+    if (language !== undefined) updateData.language = language
+    if (poster !== undefined) updateData.poster = poster
+    if (banner !== undefined) updateData.banner = banner
+    if (trailerUrl !== undefined) updateData.trailerUrl = trailerUrl
+    if (releaseDate !== undefined) updateData.releaseDate = releaseDate
+    if (censorRating !== undefined) updateData.censorRating = censorRating
+
+    if (rating !== undefined) {
+      const numRating = Number(rating)
+      if (numRating < 0 || numRating > 10) throw "Rating must be between 0 and 10"
+      updateData.rating = numRating
+    }
+
+    if (genre !== undefined) {
+      updateData.genre = Array.isArray(genre) ? genre : [genre].filter(Boolean)
+    }
+
+    // Process uploads
+    if (req.files) {
+      if (req.files.poster && req.files.poster[0]) {
+        const uploadResult = await handleImageUpload(req.files.poster[0])
+        if (uploadResult) updateData.poster = uploadResult.imageUrl
+      }
+      if (req.files.banner && req.files.banner[0]) {
+        const uploadResult = await handleImageUpload(req.files.banner[0])
+        if (uploadResult) updateData.banner = uploadResult.imageUrl
+      }
+    }
+
+    let updatedMovie = await Movie.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true }).lean()
 
     if (!updatedMovie) throw "Movie not found"
 
     updatedMovie = utilities.cleanMongoDocument(updatedMovie)
     response.success = true
     response.data = updatedMovie
+    response.message = "Movie updated successfully"
   } catch (error) {
     response = await errorhandler(error, response)
   } finally {

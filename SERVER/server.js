@@ -4,6 +4,7 @@ const cors = require("cors")
 const helmet = require("helmet")
 const morgan = require("morgan")
 const rateLimit = require("express-rate-limit")
+const path = require("path")
 
 const connectDB = require("./config/db")
 const redisClient = require("./config/redis")
@@ -159,6 +160,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
 })
 
 app.use(express.json({ limit: "10mb" }))
+app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
 // const limiter = rateLimit({
 //   windowMs: 15 * 60 * 1000,

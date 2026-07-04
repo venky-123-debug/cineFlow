@@ -7,7 +7,7 @@ export default function LoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.auth);
-  
+
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [successMsg, setSuccessMsg] = useState("");
@@ -20,19 +20,19 @@ export default function LoginPage() {
     try {
       if (isLogin) {
         // Admin Sign In
-        const res = await axios.post("http://localhost:5000/api/auth/login", {
+        const res = await axios.post("/api/auth/login", {
           email: form.email,
           password: form.password,
         });
 
         if (res.data.success) {
           const user = res.data.data;
-          
+
           // Verify that this is actually an Admin account
           if (user.role !== "ADMIN") {
             dispatch({
               type: "auth/error",
-              payload: "Access denied. Not an administrator account."
+              payload: "Access denied. Not an administrator account.",
             });
             return;
           }
@@ -56,17 +56,17 @@ export default function LoginPage() {
         }
       } else {
         // Admin Registration
-        const res = await axios.post("http://localhost:5000/api/auth/admin/register", {
+        const res = await axios.post("/api/auth/admin/register", {
           name: form.name,
           email: form.email,
           password: form.password,
-          role: "ADMIN"
+          role: "ADMIN",
         });
 
         if (res.data.success) {
           setSuccessMsg("Admin registered successfully! Please log in.");
           setIsLogin(true);
-          setForm(prev => ({ ...prev, password: "", name: "" }));
+          setForm((prev) => ({ ...prev, password: "", name: "" }));
           dispatch({ type: "auth/error", payload: null });
         } else {
           dispatch({
@@ -90,27 +90,34 @@ export default function LoginPage() {
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl -z-10 animate-pulse delay-700"></div>
 
       <div className="w-full max-w-md p-8 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl shadow-2xl">
-        
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black bg-gradient-to-r from-amber-400 via-orange-400 to-indigo-500 bg-clip-text text-transparent tracking-widest">
+          <h1 className="text-3xl font-black bg-linear-to-r from-amber-400 via-orange-400 to-indigo-500 bg-clip-text text-transparent tracking-widest">
             CINEFLOW ADMIN
           </h1>
-          <p className="text-sm text-gray-400 mt-1">Management Portal & Data Console</p>
+          <p className="text-sm text-gray-400 mt-1">
+            Management Portal & Data Console
+          </p>
         </div>
 
         {/* Tab Toggle (Login vs Register) */}
         <div className="flex bg-slate-950 p-1.5 rounded-xl border border-slate-800/80 mb-6">
           <button
             type="button"
-            onClick={() => { setIsLogin(true); dispatch({ type: "auth/error", payload: null }); }}
+            onClick={() => {
+              setIsLogin(true);
+              dispatch({ type: "auth/error", payload: null });
+            }}
             className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${isLogin ? "bg-amber-600 text-slate-950 font-black shadow-lg" : "text-gray-400 hover:text-white"}`}
           >
             Partner Sign In
           </button>
           <button
             type="button"
-            onClick={() => { setIsLogin(false); dispatch({ type: "auth/error", payload: null }); }}
+            onClick={() => {
+              setIsLogin(false);
+              dispatch({ type: "auth/error", payload: null });
+            }}
             className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${!isLogin ? "bg-amber-600 text-slate-950 font-black shadow-lg" : "text-gray-400 hover:text-white"}`}
           >
             Admin Sign Up
@@ -133,7 +140,9 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Full Name</label>
+              <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
+                Full Name
+              </label>
               <input
                 type="text"
                 required
@@ -146,7 +155,9 @@ export default function LoginPage() {
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Admin Email</label>
+            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
+              Admin Email
+            </label>
             <input
               type="email"
               required
@@ -158,7 +169,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Password</label>
+            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
+              Password
+            </label>
             <input
               type="password"
               required
@@ -176,9 +189,24 @@ export default function LoginPage() {
           >
             {loading ? (
               <span className="flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-slate-950" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin h-5 w-5 text-slate-950"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Processing...
               </span>
@@ -189,7 +217,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
       </div>
     </div>
   );

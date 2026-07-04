@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { fetchMovies } from "../slices/movieSlice";
 import Header from "../components/Header";
+import SecureImage from "../components/SecureImage";
 
 export default function MoviesPage() {
   const dispatch = useDispatch();
@@ -111,9 +112,9 @@ export default function MoviesPage() {
               >
                 {/* Poster Image Container */}
                 <div className="aspect-[2/3] w-full bg-slate-800 relative overflow-hidden">
-                  {movie.poster ? (
-                    <img
-                      src={movie.poster.startsWith("http") ? movie.poster : `http://localhost:5000${movie.poster}`}
+                  {movie.banner || movie.poster ? (
+                    <SecureImage
+                      src={movie.banner || movie.poster}
                       alt={movie.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />

@@ -21,7 +21,7 @@ export default function SeatPage() {
     setError("");
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/shows/${showId}/seats`, {
+      const res = await axios.get(`/api/shows/${showId}/seats`, {
         headers: { "access-token": token },
       });
       if (res.data.success) {
@@ -109,7 +109,7 @@ export default function SeatPage() {
 
       // 1. Lock selected seats for 10 minutes in Redis
       const lockRes = await axios.post(
-        `http://localhost:5000/api/shows/${showId}/lock`,
+        `/api/shows/${showId}/lock`,
         { seats: selected },
         { headers: { "access-token": token } }
       );
@@ -120,7 +120,7 @@ export default function SeatPage() {
 
       // 2. Create Razorpay Order
       const orderRes = await axios.post(
-        "http://localhost:5000/api/bookings",
+        "/api/bookings",
         {
           showId,
           seats: selected,
@@ -147,7 +147,7 @@ export default function SeatPage() {
           try {
             // 4. Verify payment signature on server & finalize booking
             const verifyRes = await axios.post(
-              "http://localhost:5000/api/bookings/verify-payment",
+              "/api/bookings/verify-payment",
               {
                 razorpay_order_id: paymentResponse.razorpay_order_id,
                 razorpay_payment_id: paymentResponse.razorpay_payment_id,

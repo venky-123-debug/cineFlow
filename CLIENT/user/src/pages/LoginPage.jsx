@@ -21,7 +21,7 @@ export default function LoginPage() {
     try {
       if (isLogin) {
         // Customer login
-        const res = await axios.post("http://localhost:5000/api/auth/login", {
+        const res = await axios.post("/api/auth/login", {
           email: form.email,
           password: form.password,
         });
@@ -46,7 +46,7 @@ export default function LoginPage() {
         }
       } else {
         // Customer registration
-        const res = await axios.post("http://localhost:5000/api/auth/user/signup", {
+        const res = await axios.post("/api/auth/user/signup", {
           name: form.name,
           email: form.email,
           password: form.password,
@@ -77,7 +77,7 @@ export default function LoginPage() {
     dispatch({ type: "auth/loading" });
     setSuccessMsg("");
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/google", {
+      const res = await axios.post("/api/auth/google", {
         idToken: credentialResponse.credential,
       });
       if (res.data.success) {

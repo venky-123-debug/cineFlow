@@ -1,11 +1,10 @@
 const express = require("express")
-const path = require("path")
 const fs = require("fs").promises
 const app = express.Router()
 const errorhandler = require("../scripts/error")
 const utilities = require("../scripts/utils")
 
-const uploadDir = path.join(__dirname, "../uploads/movies")
+const uploadDir = "./uploads/movies"
 
 async function findMovieFile(fileHash) {
   const entries = await fs.readdir(uploadDir)
@@ -34,8 +33,11 @@ app.get("/:fileHash", async (req, res) => {
 
     if (!filename) throw "File not found"
 
-    const filePath = path.join(uploadDir, filename)
-    const ext = path.extname(filename).toLowerCase()
+    const filePath = `${uploadDir}/${filename}`
+    
+    // Manually extract file extension without using path module
+    const dotIndex = filename.lastIndexOf(".")
+    const ext = dotIndex !== -1 ? filename.slice(dotIndex).toLowerCase() : ""
     const mimeType =
       ext === ".png" ? "image/png" : ext === ".gif" ? "image/gif" : ext === ".webp" ? "image/webp" : "image/jpeg"
 
@@ -52,9 +54,10 @@ app.get("/:fileHash", async (req, res) => {
       return res.json(response)
     }
 
-    response.success = true
+    // Directly read the file as buffer using fs.promises and send it
+    const fileBuffer = await fs.readFile(filePath)
     res.set("Content-Type", mimeType)
-    return res.sendFile(filePath)
+    return res.send(fileBuffer)
   } catch (error) {
     response = await errorhandler(error, response)
     return res.json(response)

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
+import SecureImage from "../components/SecureImage";
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -18,7 +19,7 @@ export default function BookingsPage() {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "http://localhost:5000/api/bookings/my-bookings",
+          "/api/bookings/my-bookings",
           {
             headers: { "access-token": token },
           },
@@ -151,13 +152,9 @@ export default function BookingsPage() {
                   <div className="flex-1 p-6 flex flex-col sm:flex-row gap-6">
                     {/* Movie Poster */}
                     <div className="w-[90px] aspect-2/3 rounded-lg overflow-hidden bg-slate-800 self-center sm:self-start flex-shrink-0 border border-slate-800">
-                      {movie?.poster ? (
-                        <img
-                          src={
-                            movie.poster.startsWith("http")
-                              ? movie.poster
-                              : `http://localhost:5000${movie.poster}`
-                          }
+                      {movie?.poster || movie?.banner ? (
+                        <SecureImage
+                          src={movie.poster || movie.banner}
                           alt=""
                           className="w-full h-full object-cover"
                         />

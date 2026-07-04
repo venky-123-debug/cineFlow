@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
+import SecureImage from "../components/SecureImage";
 
 export default function MovieDetailPage() {
   const { movieId } = useParams();
@@ -43,13 +44,13 @@ export default function MovieDetailPage() {
         const token = localStorage.getItem("token");
         
         // 1. Fetch movie details
-        const movieRes = await axios.get(`http://localhost:5000/api/movies/${movieId}`, {
+        const movieRes = await axios.get(`/api/movies/${movieId}`, {
           headers: { "access-token": token },
         });
         setMovie(movieRes.data.data);
 
         // 2. Fetch grouped schedule by city & date
-        const scheduleRes = await axios.get("http://localhost:5000/api/shows/schedule", {
+        const scheduleRes = await axios.get("/api/shows/schedule", {
           headers: { "access-token": token },
           params: { 
             movieId, 
@@ -92,7 +93,7 @@ export default function MovieDetailPage() {
           <div className="relative w-full md:h-[400px] bg-slate-900 overflow-hidden flex items-center border-b border-slate-800">
             {/* Blurred background image */}
             <div className="absolute inset-0 z-0 opacity-20 filter blur-2xl scale-110">
-              <img 
+              <SecureImage 
                 src={movie.banner || movie.poster || "/placeholder-banner.jpg"} 
                 alt="" 
                 className="w-full h-full object-cover"
@@ -105,8 +106,8 @@ export default function MovieDetailPage() {
             <div className="max-w-7xl w-full mx-auto px-6 py-8 relative z-20 flex flex-col md:flex-row gap-8 items-center md:items-end">
               {/* Poster card */}
               <div className="w-[180px] md:w-[240px] aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-slate-900 -mb-16 md:-mb-24 z-30 self-center md:self-auto">
-                <img
-                  src={movie.poster ? (movie.poster.startsWith("http") ? movie.poster : `http://localhost:5000${movie.poster}`) : "/placeholder-poster.jpg"}
+                <SecureImage
+                  src={movie.poster || movie.banner || "/placeholder-poster.jpg"}
                   alt={movie.title}
                   className="w-full h-full object-cover"
                 />
