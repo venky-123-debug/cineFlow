@@ -392,17 +392,17 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+    <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
       <Header />
 
       <div className="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto px-6 py-8 gap-8">
         {/* Sidebar Navigation */}
         <aside className="w-full md:w-[220px] shrink-0 flex flex-col gap-2">
-          <div className="p-4 rounded-xl border border-indigo-500/20 bg-indigo-600/5 mb-4 text-center">
+          <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-600/5 mb-4 text-center">
             <span className="text-xs text-gray-500 font-bold uppercase block">
               Workspace Role
             </span>
-            <span className="text-sm font-black text-amber-400 mt-0.5 block uppercase tracking-wide">
+            <span className="text-sm font-black text-rose-500 mt-0.5 block uppercase tracking-wide">
               ADMIN CONTROL
             </span>
           </div>
@@ -411,8 +411,8 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab("dashboard")}
             className={`w-full text-left px-4 py-3 rounded-xl border font-bold text-sm transition-all ${
               activeTab === "dashboard"
-                ? "bg-amber-500 border-amber-500 text-slate-950 shadow-lg shadow-amber-500/20"
-                : "bg-slate-900/60 border-slate-850 text-gray-400 hover:text-white"
+                ? "bg-rose-600 border-rose-600 text-white shadow-lg shadow-rose-600/20"
+                : "bg-zinc-900/60 border-zinc-850 text-gray-400 hover:text-white"
             }`}
           >
             Dashboard Stats
@@ -422,8 +422,8 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab("movies")}
             className={`w-full text-left px-4 py-3 rounded-xl border font-bold text-sm transition-all ${
               activeTab === "movies"
-                ? "bg-amber-500 border-amber-500 text-slate-950 shadow-lg shadow-amber-500/20"
-                : "bg-slate-900/60 border-slate-850 text-gray-400 hover:text-white"
+                ? "bg-rose-600 border-rose-600 text-white shadow-lg shadow-rose-600/20"
+                : "bg-zinc-900/60 border-zinc-850 text-gray-400 hover:text-white"
             }`}
           >
             Manage Movies
@@ -433,8 +433,8 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab("theatres")}
             className={`w-full text-left px-4 py-3 rounded-xl border font-bold text-sm transition-all ${
               activeTab === "theatres"
-                ? "bg-amber-500 border-amber-500 text-slate-950 shadow-lg shadow-amber-500/20"
-                : "bg-slate-900/60 border-slate-850 text-gray-400 hover:text-white"
+                ? "bg-rose-600 border-rose-600 text-white shadow-lg shadow-rose-600/20"
+                : "bg-zinc-900/60 border-zinc-850 text-gray-400 hover:text-white"
             }`}
           >
             Manage Theatres
@@ -444,8 +444,8 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab("shows")}
             className={`w-full text-left px-4 py-3 rounded-xl border font-bold text-sm transition-all ${
               activeTab === "shows"
-                ? "bg-amber-500 border-amber-500 text-slate-950 shadow-lg shadow-amber-500/20"
-                : "bg-slate-900/60 border-slate-850 text-gray-400 hover:text-white"
+                ? "bg-rose-600 border-rose-600 text-white shadow-lg shadow-rose-600/20"
+                : "bg-zinc-900/60 border-zinc-850 text-gray-400 hover:text-white"
             }`}
           >
             Manage Shows
@@ -455,8 +455,8 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab("bookings")}
             className={`w-full text-left px-4 py-3 rounded-xl border font-bold text-sm transition-all ${
               activeTab === "bookings"
-                ? "bg-amber-500 border-amber-500 text-slate-950 shadow-lg shadow-amber-500/20"
-                : "bg-slate-900/60 border-slate-850 text-gray-400 hover:text-white"
+                ? "bg-rose-600 border-rose-600 text-white shadow-lg shadow-rose-600/20"
+                : "bg-zinc-900/60 border-zinc-850 text-gray-400 hover:text-white"
             }`}
           >
             Ticket Ledger
@@ -464,10 +464,10 @@ export default function AdminDashboard() {
         </aside>
 
         {/* Workspace content section */}
-        <main className="flex-1 min-w-0 bg-slate-900/20 border border-slate-850 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+        <main className="flex-1 min-w-0 bg-zinc-900/20 border border-zinc-850 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
           {/* Header row */}
           <div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-900 pb-4 mb-6 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-zinc-900 pb-4 mb-6 gap-4">
               <div>
                 <h2 className="text-xl font-bold tracking-wide uppercase">
                   Admin Panel / {activeTab}
@@ -496,7 +496,7 @@ export default function AdminDashboard() {
                     });
                     setShowModal("addMovie");
                   }}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-black shadow-lg"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-black shadow-lg"
                 >
                   + Add Movie
                 </button>
@@ -514,7 +514,7 @@ export default function AdminDashboard() {
                     });
                     setShowModal("addTheatre");
                   }}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-black shadow-lg"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-black shadow-lg"
                 >
                   + Add Theatre
                 </button>
@@ -533,7 +533,7 @@ export default function AdminDashboard() {
                     });
                     setShowModal("addShow");
                   }}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-black shadow-lg"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-black shadow-lg"
                 >
                   + Add Show
                 </button>
@@ -556,7 +556,7 @@ export default function AdminDashboard() {
             {loading ? (
               <div className="py-20 flex justify-center">
                 <svg
-                  className="animate-spin h-10 w-10 text-amber-500"
+                  className="animate-spin h-10 w-10 text-rose-500"
                   fill="none"
                   viewBox="0 0 24 24"
                 >
@@ -582,16 +582,16 @@ export default function AdminDashboard() {
                   <div className="space-y-8">
                     {/* Cards grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-855 flex items-center justify-between shadow-md">
+                      <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800/80 flex items-center justify-between shadow-md">
                         <div>
                           <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block">
                             Total Bookings
                           </span>
-                          <span className="text-3xl font-black text-amber-400 block mt-1.5">
+                          <span className="text-3xl font-black text-rose-500 block mt-1.5">
                             {stats.totalBookings}
                           </span>
                         </div>
-                        <div className="p-3.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/10">
+                        <div className="p-3.5 rounded-full bg-rose-600/10 text-rose-500 border border-rose-600/10">
                           <svg
                             className="w-6 h-6"
                             fill="none"
@@ -608,7 +608,7 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
-                      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-855 flex items-center justify-between shadow-md">
+                      <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800/80 flex items-center justify-between shadow-md">
                         <div>
                           <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block">
                             Platform Revenue
@@ -637,7 +637,7 @@ export default function AdminDashboard() {
 
                     {/* Recent Bookings */}
                     <div className="space-y-4">
-                      <h3 className="text-base font-bold tracking-wide border-l-4 border-amber-500 pl-3">
+                      <h3 className="text-base font-bold tracking-wide border-l-4 border-rose-600 pl-3">
                         Recent Confirmations
                       </h3>
 
@@ -646,9 +646,9 @@ export default function AdminDashboard() {
                           No bookings recorded yet.
                         </p>
                       ) : (
-                        <div className="overflow-x-auto border border-slate-900 rounded-xl">
+                        <div className="overflow-x-auto border border-zinc-900 rounded-xl">
                           <table className="w-full text-xs text-left text-gray-400">
-                            <thead className="bg-slate-950 text-white font-bold uppercase text-[10px] tracking-wider border-b border-slate-900">
+                            <thead className="bg-zinc-950 text-white font-bold uppercase text-[10px] tracking-wider border-b border-zinc-900">
                               <tr>
                                 <th className="p-4">Customer</th>
                                 <th className="p-4">Movie</th>
@@ -661,7 +661,7 @@ export default function AdminDashboard() {
                               {stats.recentBookings.map((b) => (
                                 <tr
                                   key={b.id}
-                                  className="border-b border-slate-900 hover:bg-slate-900/40"
+                                  className="border-b border-zinc-900 hover:bg-zinc-900/40"
                                 >
                                   <td className="p-4 font-semibold text-gray-200">
                                     {b.userId?.name || "N/A"} <br />
@@ -676,7 +676,7 @@ export default function AdminDashboard() {
                                       {b.showId?.theatreId?.name}
                                     </span>
                                   </td>
-                                  <td className="p-4 font-bold text-amber-400 uppercase">
+                                  <td className="p-4 font-bold text-rose-500 uppercase">
                                     {b.seats?.join(", ")}
                                   </td>
                                   <td className="p-4 font-black text-emerald-400">
@@ -703,9 +703,9 @@ export default function AdminDashboard() {
                         No movies available in the database.
                       </p>
                     ) : (
-                      <div className="overflow-x-auto border border-slate-900 rounded-xl">
+                      <div className="overflow-x-auto border border-zinc-900 rounded-xl">
                         <table className="w-full text-xs text-left text-gray-400">
-                          <thead className="bg-slate-950 text-white font-bold uppercase text-[10px] tracking-wider border-b border-slate-900">
+                          <thead className="bg-zinc-950 text-white font-bold uppercase text-[10px] tracking-wider border-b border-zinc-900">
                             <tr>
                               <th className="p-4">Movie</th>
                               <th className="p-4">Info</th>
@@ -717,7 +717,7 @@ export default function AdminDashboard() {
                             {movies.map((movie) => (
                               <tr
                                 key={movie.id}
-                                className="border-b border-slate-900 hover:bg-slate-900/40"
+                                className="border-b border-zinc-900 hover:bg-zinc-900/40"
                               >
                                 <td className="p-4 font-semibold text-gray-200 flex items-center gap-3">
                                   {movie.banner && (
@@ -750,7 +750,7 @@ export default function AdminDashboard() {
                                     {movie.genre?.map((g) => (
                                       <span
                                         key={g}
-                                        className="text-[10px] px-2 py-0.5 bg-slate-950 border border-slate-800 rounded text-gray-400"
+                                        className="text-[10px] px-2 py-0.5 bg-zinc-950 border border-zinc-800 rounded text-gray-400"
                                       >
                                         {g}
                                       </span>
@@ -760,7 +760,7 @@ export default function AdminDashboard() {
                                 <td className="p-4 text-right space-x-2">
                                   <button
                                     onClick={() => initMovieEdit(movie)}
-                                    className="px-2.5 py-1 text-[10px] bg-slate-850 hover:bg-slate-800 border border-slate-800 text-amber-400 rounded-md font-bold"
+                                    className="px-2.5 py-1 text-[10px] bg-slate-850 hover:bg-slate-800 border border-zinc-800 text-rose-500 rounded-md font-bold"
                                   >
                                     Edit
                                   </button>
@@ -791,9 +791,9 @@ export default function AdminDashboard() {
                         No theatres available in the database.
                       </p>
                     ) : (
-                      <div className="overflow-x-auto border border-slate-900 rounded-xl">
+                      <div className="overflow-x-auto border border-zinc-900 rounded-xl">
                         <table className="w-full text-xs text-left text-gray-400">
-                          <thead className="bg-slate-950 text-white font-bold uppercase text-[10px] tracking-wider border-b border-slate-900">
+                          <thead className="bg-zinc-950 text-white font-bold uppercase text-[10px] tracking-wider border-b border-zinc-900">
                             <tr>
                               <th className="p-4">Theatre</th>
                               <th className="p-4">City</th>
@@ -806,7 +806,7 @@ export default function AdminDashboard() {
                             {theatres.map((theatre) => (
                               <tr
                                 key={theatre.id}
-                                className="border-b border-slate-900 hover:bg-slate-900/40"
+                                className="border-b border-zinc-900 hover:bg-zinc-900/40"
                               >
                                 <td className="p-4 font-semibold text-gray-200">
                                   {theatre.name} <br />
@@ -817,7 +817,7 @@ export default function AdminDashboard() {
                                 <td className="p-4 font-bold text-gray-300">
                                   {theatre.city}
                                 </td>
-                                <td className="p-4 font-bold text-indigo-400">
+                                <td className="p-4 font-bold text-rose-500">
                                   {theatre.totalSeats} seats
                                 </td>
                                 <td className="p-4 font-semibold text-gray-300">
@@ -826,7 +826,7 @@ export default function AdminDashboard() {
                                 <td className="p-4 text-right space-x-2">
                                   <button
                                     onClick={() => initTheatreEdit(theatre)}
-                                    className="px-2.5 py-1 text-[10px] bg-slate-850 hover:bg-slate-800 border border-slate-800 text-amber-400 rounded-md font-bold"
+                                    className="px-2.5 py-1 text-[10px] bg-slate-850 hover:bg-slate-800 border border-zinc-800 text-rose-500 rounded-md font-bold"
                                   >
                                     Edit
                                   </button>
@@ -857,9 +857,9 @@ export default function AdminDashboard() {
                         No shows scheduled in the database.
                       </p>
                     ) : (
-                      <div className="overflow-x-auto border border-slate-900 rounded-xl">
+                      <div className="overflow-x-auto border border-zinc-900 rounded-xl">
                         <table className="w-full text-xs text-left text-gray-400">
-                          <thead className="bg-slate-950 text-white font-bold uppercase text-[10px] tracking-wider border-b border-slate-900">
+                          <thead className="bg-zinc-950 text-white font-bold uppercase text-[10px] tracking-wider border-b border-zinc-900">
                             <tr>
                               <th className="p-4">Movie</th>
                               <th className="p-4">Theatre</th>
@@ -875,7 +875,7 @@ export default function AdminDashboard() {
                               return (
                                 <tr
                                   key={show.id}
-                                  className="border-b border-slate-900 hover:bg-slate-900/40"
+                                  className="border-b border-zinc-900 hover:bg-zinc-900/40"
                                 >
                                   <td className="p-4 font-bold text-white">
                                     {show.movieId?.title || "Movie Show"}
@@ -892,7 +892,7 @@ export default function AdminDashboard() {
                                       {showTime.toLocaleDateString()}
                                     </span>{" "}
                                     <br />
-                                    <span className="text-indigo-400 font-black text-[10px] block mt-0.5 uppercase">
+                                    <span className="text-rose-500 font-black text-[10px] block mt-0.5 uppercase">
                                       {showTime.toLocaleTimeString([], {
                                         hour: "2-digit",
                                         minute: "2-digit",
@@ -908,7 +908,7 @@ export default function AdminDashboard() {
                                   <td className="p-4 text-right space-x-2">
                                     <button
                                       onClick={() => initShowEdit(show)}
-                                      className="px-2.5 py-1 text-[10px] bg-slate-855 hover:bg-slate-800 border border-slate-800 text-amber-400 rounded-md font-bold"
+                                      className="px-2.5 py-1 text-[10px] bg-slate-855 hover:bg-slate-800 border border-zinc-800 text-rose-500 rounded-md font-bold"
                                     >
                                       Edit
                                     </button>
@@ -940,9 +940,9 @@ export default function AdminDashboard() {
                         No bookings recorded yet.
                       </p>
                     ) : (
-                      <div className="overflow-x-auto border border-slate-900 rounded-xl">
+                      <div className="overflow-x-auto border border-zinc-900 rounded-xl">
                         <table className="w-full text-xs text-left text-gray-400">
-                          <thead className="bg-slate-950 text-white font-bold uppercase text-[10px] tracking-wider border-b border-slate-900">
+                          <thead className="bg-zinc-950 text-white font-bold uppercase text-[10px] tracking-wider border-b border-zinc-900">
                             <tr>
                               <th className="p-4">Customer</th>
                               <th className="p-4">Movie & Theatre</th>
@@ -956,7 +956,7 @@ export default function AdminDashboard() {
                             {bookings.map((booking) => (
                               <tr
                                 key={booking.id}
-                                className="border-b border-slate-900 hover:bg-slate-900/40"
+                                className="border-b border-zinc-900 hover:bg-zinc-900/40"
                               >
                                 <td className="p-4 font-semibold text-gray-200">
                                   {booking.userId?.name || "N/A"} <br />
@@ -972,7 +972,7 @@ export default function AdminDashboard() {
                                     {booking.showId?.theatreId?.name}
                                   </span>
                                 </td>
-                                <td className="p-4 font-bold text-amber-400 uppercase">
+                                <td className="p-4 font-bold text-rose-500 uppercase">
                                   {booking.seats?.join(", ")}
                                 </td>
                                 <td className="p-4 font-black text-emerald-400">
@@ -985,7 +985,7 @@ export default function AdminDashboard() {
                                         ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                                         : booking.status === "CANCEL"
                                           ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                                          : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                          : "bg-rose-600/10 text-rose-500 border-rose-600/20"
                                     }`}
                                   >
                                     {booking.status}
@@ -1008,7 +1008,7 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <div className="border-t border-slate-900 pt-4 mt-6 text-center text-[10px] text-gray-500 font-bold uppercase">
+          <div className="border-t border-zinc-900 pt-4 mt-6 text-center text-[10px] text-gray-500 font-bold uppercase">
             CineFlow Admin Panel • Verified Security
           </div>
         </main>
@@ -1016,10 +1016,10 @@ export default function AdminDashboard() {
 
       {/* CRUD MODALS */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl relative overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg p-6 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl relative overflow-y-auto max-h-[90vh]">
             {/* Modal Header */}
-            <div className="flex justify-between items-center border-b border-slate-855 pb-3 mb-4">
+            <div className="flex justify-between items-center border-b border-zinc-800/80 pb-3 mb-4">
               <h3 className="text-base font-bold uppercase">
                 {showModal.startsWith("add") ? "+ Create " : "✎ Edit "}
                 {showModal.includes("Movie")
@@ -1052,7 +1052,7 @@ export default function AdminDashboard() {
                         setMovieForm({ ...movieForm, title: e.target.value })
                       }
                       placeholder="e.g. Inception"
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                   <div>
@@ -1067,7 +1067,7 @@ export default function AdminDashboard() {
                         setMovieForm({ ...movieForm, language: e.target.value })
                       }
                       placeholder="e.g. English"
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                 </div>
@@ -1087,7 +1087,7 @@ export default function AdminDashboard() {
                       })
                     }
                     placeholder="Enter short storyline..."
-                    className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                   />
                 </div>
 
@@ -1106,7 +1106,7 @@ export default function AdminDashboard() {
                           duration: parseInt(e.target.value),
                         })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                   <div>
@@ -1126,7 +1126,7 @@ export default function AdminDashboard() {
                           rating: parseFloat(e.target.value),
                         })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                   <div>
@@ -1141,7 +1141,7 @@ export default function AdminDashboard() {
                           censorRating: e.target.value,
                         })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     >
                       <option value="U">U (Universal)</option>
                       <option value="UA">UA (Parental guidance)</option>
@@ -1164,7 +1164,7 @@ export default function AdminDashboard() {
                         setMovieForm({ ...movieForm, genre: e.target.value })
                       }
                       placeholder="e.g. Action, Sci-Fi"
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                   <div>
@@ -1181,7 +1181,7 @@ export default function AdminDashboard() {
                           releaseDate: e.target.value,
                         })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                 </div>
@@ -1195,7 +1195,7 @@ export default function AdminDashboard() {
                       type="file"
                       accept="image/*"
                       onChange={(e) => setBannerFile(e.target.files[0])}
-                      className="w-full text-xs text-gray-405 file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-black file:bg-amber-500/10 file:text-amber-400 hover:file:bg-amber-500/20 cursor-pointer border border-slate-800 p-1 bg-slate-950 rounded-lg"
+                      className="w-full text-xs text-gray-405 file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-black file:bg-rose-600/10 file:text-rose-500 hover:file:bg-rose-600/20 cursor-pointer border border-zinc-800 p-1 bg-zinc-950 rounded-lg"
                     />
                   </div>
                   {(bannerPreview || movieForm.banner) && (
@@ -1203,7 +1203,7 @@ export default function AdminDashboard() {
                       <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                         Banner Preview
                       </label>
-                      <div className="border border-slate-800 rounded-lg overflow-hidden bg-slate-950 p-2 flex items-center justify-center aspect-video w-full">
+                      <div className="border border-zinc-800 rounded-lg overflow-hidden bg-zinc-950 p-2 flex items-center justify-center aspect-video w-full">
                         {bannerPreview ? (
                           <img
                             src={bannerPreview}
@@ -1236,14 +1236,14 @@ export default function AdminDashboard() {
                       })
                     }
                     placeholder="e.g. https://youtube.com/..."
-                    className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="w-full py-2.5 mt-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase disabled:opacity-50"
+                  className="w-full py-2.5 mt-4 bg-rose-600 hover:bg-rose-500 text-white font-black uppercase disabled:opacity-50"
                 >
                   {actionLoading ? "Saving details..." : "Save Movie"}
                 </button>
@@ -1266,7 +1266,7 @@ export default function AdminDashboard() {
                         setTheatreForm({ ...theatreForm, name: e.target.value })
                       }
                       placeholder="e.g. PVR Orion"
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                   <div>
@@ -1281,7 +1281,7 @@ export default function AdminDashboard() {
                         setTheatreForm({ ...theatreForm, city: e.target.value })
                       }
                       placeholder="e.g. Bangalore"
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                 </div>
@@ -1301,7 +1301,7 @@ export default function AdminDashboard() {
                       })
                     }
                     placeholder="e.g. Malleswaram"
-                    className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                   />
                 </div>
 
@@ -1320,7 +1320,7 @@ export default function AdminDashboard() {
                           totalSeats: parseInt(e.target.value),
                         })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                   <div>
@@ -1337,7 +1337,7 @@ export default function AdminDashboard() {
                           screens: parseInt(e.target.value),
                         })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                 </div>
@@ -1356,14 +1356,14 @@ export default function AdminDashboard() {
                       })
                     }
                     placeholder="e.g. AC, Parking, Food Court"
-                    className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="w-full py-2.5 mt-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase disabled:opacity-50"
+                  className="w-full py-2.5 mt-4 bg-rose-600 hover:bg-rose-500 text-white font-black uppercase disabled:opacity-50"
                 >
                   {actionLoading ? "Saving details..." : "Save Theatre"}
                 </button>
@@ -1383,7 +1383,7 @@ export default function AdminDashboard() {
                     onChange={(e) =>
                       setShowForm({ ...showForm, movieId: e.target.value })
                     }
-                    className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                   >
                     <option value="" disabled>
                       Select Movie
@@ -1415,7 +1415,7 @@ export default function AdminDashboard() {
                           : showForm.availableSeats,
                       });
                     }}
-                    className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                   >
                     <option value="" disabled>
                       Select Theatre
@@ -1444,7 +1444,7 @@ export default function AdminDashboard() {
                           screenNumber: parseInt(e.target.value),
                         })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                   <div>
@@ -1462,7 +1462,7 @@ export default function AdminDashboard() {
                           price: parseInt(e.target.value),
                         })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                   <div>
@@ -1479,7 +1479,7 @@ export default function AdminDashboard() {
                           availableSeats: parseInt(e.target.value),
                         })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                 </div>
@@ -1496,7 +1496,7 @@ export default function AdminDashboard() {
                       onChange={(e) =>
                         setShowForm({ ...showForm, showDate: e.target.value })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                   <div>
@@ -1510,7 +1510,7 @@ export default function AdminDashboard() {
                       onChange={(e) =>
                         setShowForm({ ...showForm, showTime: e.target.value })
                       }
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
+                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                     />
                   </div>
                 </div>
@@ -1518,7 +1518,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="w-full py-2.5 mt-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase disabled:opacity-50"
+                  className="w-full py-2.5 mt-4 bg-rose-600 hover:bg-rose-500 text-white font-black uppercase disabled:opacity-50"
                 >
                   {actionLoading ? "Saving details..." : "Save Show"}
                 </button>

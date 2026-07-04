@@ -73,10 +73,10 @@ export default function MovieDetailPage() {
 
   if (loading && !movie) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
         <div className="flex flex-col items-center">
           <svg
-            className="animate-spin h-10 w-10 text-indigo-500"
+            className="animate-spin h-10 w-10 text-rose-500"
             fill="none"
             viewBox="0 0 24 24"
           >
@@ -94,22 +94,25 @@ export default function MovieDetailPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <span className="text-gray-400 mt-4 text-sm">Loading details...</span>
+          <span className="text-zinc-500 mt-4 text-xs font-bold uppercase tracking-wider">Loading details...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+    <div className="min-h-screen text-white flex flex-col relative overflow-hidden">
+      {/* Top spotlight projection overlay */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-rose-500/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10"></div>
+      
       <Header selectedCity={selectedCity} onCityChange={handleCityChange} />
 
       {movie && (
         <>
           {/* Movie Hero Banner with blurred backdrop */}
-          <div className="relative w-full md:h-[400px] bg-slate-900 overflow-hidden flex items-center border-b border-slate-800">
+          <div className="relative w-full md:h-[400px] bg-zinc-900/10 overflow-hidden flex items-center border-b border-zinc-900/60 shadow-[0_15px_30px_-10px_rgba(0,0,0,0.5)]">
             {/* Blurred background image */}
-            <div className="absolute inset-0 z-0 opacity-20 filter blur-2xl scale-110">
+            <div className="absolute inset-0 z-0 opacity-15 filter blur-3xl scale-110">
               <SecureImage
                 src={movie.banner || "/placeholder-banner.jpg"}
                 alt=""
@@ -117,14 +120,13 @@ export default function MovieDetailPage() {
               />
             </div>
             {/* Radial dark gradient mask */}
-            <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/80 to-transparent z-10"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-10"></div>
 
             {/* Main content layer */}
             <div className="max-w-7xl w-full mx-auto px-6 py-8 relative z-20 flex flex-col md:flex-row gap-8 items-center md:items-end">
               {/* Poster card */}
               <div
-                className="w-[180px] md:w-[240px] asp
-              ect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-slate-900 -mb-16 md:-mb-24 z-30 self-center md:self-auto"
+                className="w-[180px] md:w-[240px] aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-950 -mb-16 md:-mb-24 z-30 self-center md:self-auto"
               >
                 <SecureImage
                   src={movie.banner || "/placeholder-poster.jpg"}
@@ -135,19 +137,19 @@ export default function MovieDetailPage() {
 
               {/* Text metadata */}
               <div className="flex-1 text-center md:text-left self-center md:self-auto md:pb-4">
-                <span className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-xs font-semibold uppercase tracking-wider">
+                <span className="px-3.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-black uppercase tracking-widest">
                   {movie.censorRating || "UA"}
                 </span>
-                <h2 className="text-3xl md:text-5xl font-black mt-3 tracking-wide text-white drop-shadow-md">
+                <h2 className="text-3xl md:text-5xl font-black mt-4 tracking-wider text-zinc-100 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] uppercase">
                   {movie.title}
                 </h2>
 
                 {/* Metarow */}
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4 text-xs font-semibold text-gray-300">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-5 text-xs font-bold text-zinc-300">
                   {movie.rating > 0 && (
-                    <span className="flex items-center gap-1 bg-amber-400/10 text-amber-300 border border-amber-500/20 px-2.5 py-1 rounded-lg">
+                    <span className="flex items-center gap-1.5 bg-rose-500/15 text-rose-400 border border-rose-500/20 px-3 py-1 rounded-xl shadow-sm">
                       <svg
-                        className="w-3.5 h-3.5 fill-amber-300"
+                        className="w-3.5 h-3.5 fill-rose-500 text-rose-500"
                         viewBox="0 0 20 20"
                       >
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -172,11 +174,11 @@ export default function MovieDetailPage() {
 
                 {/* Genre pills */}
                 {movie.genre && movie.genre.length > 0 && (
-                  <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
+                  <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-5">
                     {movie.genre.map((g) => (
                       <span
                         key={g}
-                        className="text-xs px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-gray-400"
+                        className="text-[10px] px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 font-bold uppercase tracking-wider"
                       >
                         {g}
                       </span>
@@ -192,10 +194,10 @@ export default function MovieDetailPage() {
                     href={movie.trailerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-6 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm font-bold text-gray-200 hover:text-white hover:bg-slate-850 flex items-center justify-center gap-2 transition-all shadow-md"
+                    className="px-6 py-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs font-black uppercase tracking-wider text-zinc-200 hover:text-white hover:border-rose-500 hover:shadow-[0_4px_15px_rgba(244,63,94,0.15)] flex items-center justify-center gap-2.5 transition-all duration-300 shadow-md"
                   >
                     <svg
-                      className="w-4 h-4 text-rose-500 fill-rose-500"
+                      className="w-4.5 h-4.5 text-rose-500 fill-rose-500"
                       viewBox="0 0 20 20"
                     >
                       <path
@@ -212,31 +214,32 @@ export default function MovieDetailPage() {
           </div>
 
           {/* Bottom booking details and schedule */}
-          <main className="max-w-7xl w-full mx-auto px-6 py-12 md:py-16 mt-16 md:mt-24 flex flex-col lg:flex-row gap-12">
+          <main className="max-w-7xl w-full mx-auto px-6 py-12 md:py-16 mt-16 md:mt-24 flex flex-col lg:flex-row gap-12 relative z-20">
             {/* Left Column: Description & Synopsis */}
-            <div className="flex-1 space-y-6">
-              <div>
-                <h3 className="text-xl font-bold tracking-wide border-l-4 border-indigo-500 pl-3 mb-3">
+            <div className="flex-1 space-y-8">
+              <div className="bg-zinc-900/30 border border-zinc-850 p-6 rounded-3xl backdrop-blur-sm">
+                <h3 className="text-base font-black tracking-wider uppercase text-zinc-100 flex items-center gap-2 mb-4">
+                  <span className="w-1 h-5 bg-rose-600 rounded-full inline-block"></span>
                   Synopsis
                 </h3>
-                <p className="text-gray-300 leading-relaxed text-sm">
+                <p className="text-zinc-400 leading-relaxed text-sm font-medium">
                   {movie.description}
                 </p>
               </div>
 
               {/* Additional Details */}
-              <div className="grid grid-cols-2 gap-4 p-4 rounded-xl border border-slate-900 bg-slate-900/10 text-xs">
+              <div className="grid grid-cols-2 gap-4 p-5 rounded-3xl border border-zinc-900 bg-zinc-900/20 text-xs font-bold">
                 <div>
-                  <span className="text-gray-500 block">Censor Rating</span>
-                  <span className="text-white font-semibold mt-0.5 block">
+                  <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">Censor Rating</span>
+                  <span className="text-zinc-200 mt-1 block font-black uppercase text-sm">
                     {movie.censorRating || "UA"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500 block">Release Date</span>
-                  <span className="text-white font-semibold mt-0.5 block">
+                  <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">Release Date</span>
+                  <span className="text-zinc-200 mt-1 block font-black text-sm">
                     {movie.releaseDate
-                      ? new Date(movie.releaseDate).toLocaleDateString()
+                      ? new Date(movie.releaseDate).toLocaleDateString(undefined, { dateStyle: 'medium' })
                       : "N/A"}
                   </span>
                 </div>
@@ -244,32 +247,33 @@ export default function MovieDetailPage() {
             </div>
 
             {/* Right Column: Shows Schedule */}
-            <div className="w-full lg:w-[650px] space-y-6">
-              <h3 className="text-xl font-bold tracking-wide border-l-4 border-indigo-500 pl-3">
+            <div className="w-full lg:w-[620px] space-y-6">
+              <h3 className="text-base font-black tracking-wider uppercase text-zinc-100 flex items-center gap-2">
+                <span className="w-1.5 h-5 bg-rose-600 rounded-full inline-block"></span>
                 Select Date & Book Show
               </h3>
 
               {/* Date Tabs */}
-              <div className="flex gap-2 overflow-x-auto pb-2 border-b border-slate-900">
+              <div className="flex gap-2 overflow-x-auto pb-3 border-b border-zinc-900/80">
                 {dateTabs.map((tab) => {
                   const isActive = tab.isoString === selectedDate;
                   return (
                     <button
                       key={tab.isoString}
                       onClick={() => setSelectedDate(tab.isoString)}
-                      className={`flex-shrink-0 flex flex-col items-center px-4 py-2.5 rounded-xl border transition-all ${
+                      className={`flex-shrink-0 flex flex-col items-center px-4.5 py-3 rounded-2xl border transition-all duration-300 min-w-[75px] ${
                         isActive
-                          ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-                          : "bg-slate-900/60 border-slate-850 text-gray-400 hover:text-white"
+                          ? "bg-rose-600 border-rose-600 text-white shadow-lg shadow-rose-600/20"
+                          : "bg-zinc-900/60 border-zinc-850 text-zinc-400 hover:text-white hover:border-zinc-700"
                       }`}
                     >
-                      <span className="text-[10px] uppercase font-bold tracking-wide">
+                      <span className="text-[9px] uppercase font-black tracking-wider opacity-80">
                         {tab.dayName}
                       </span>
-                      <span className="text-lg font-black mt-0.5">
+                      <span className="text-xl font-black mt-1">
                         {tab.dayNum}
                       </span>
-                      <span className="text-[10px] tracking-wide mt-0.5 font-semibold">
+                      <span className="text-[9px] tracking-widest mt-1 font-black uppercase">
                         {tab.monthName}
                       </span>
                     </button>
@@ -279,9 +283,9 @@ export default function MovieDetailPage() {
 
               {/* Schedule List */}
               {loading ? (
-                <div className="py-12 flex justify-center">
+                <div className="py-16 flex justify-center">
                   <svg
-                    className="animate-spin h-8 w-8 text-indigo-500"
+                    className="animate-spin h-8 w-8 text-rose-500"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
@@ -301,13 +305,13 @@ export default function MovieDetailPage() {
                   </svg>
                 </div>
               ) : error ? (
-                <div className="text-center py-6 bg-slate-900/20 border border-slate-800 rounded-xl text-rose-400">
+                <div className="text-center py-6 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-xs font-bold uppercase tracking-wider">
                   {error}
                 </div>
               ) : schedule.length === 0 ? (
-                <div className="text-center py-10 bg-slate-900/10 border border-dashed border-slate-850 rounded-xl text-gray-500 text-sm">
+                <div className="text-center py-12 bg-zinc-900/10 border border-dashed border-zinc-850 rounded-2xl text-zinc-500 text-xs font-bold uppercase tracking-wider">
                   No shows available in{" "}
-                  <span className="text-indigo-400 font-bold">
+                  <span className="text-rose-500 font-black">
                     {selectedCity}
                   </span>{" "}
                   on this date.
@@ -317,20 +321,20 @@ export default function MovieDetailPage() {
                   {schedule.map((theatre) => (
                     <div
                       key={theatre.id}
-                      className="p-5 rounded-2xl bg-slate-900/40 border border-slate-850 shadow-md space-y-4"
+                      className="p-6 rounded-3xl bg-zinc-900/20 border border-zinc-850/60 shadow-md space-y-4 hover:border-zinc-800 transition-colors"
                     >
                       {/* Theatre Info */}
                       <div>
-                        <h4 className="text-base font-bold text-white tracking-wide">
+                        <h4 className="text-sm font-black text-zinc-100 tracking-wider">
                           {theatre.name}
                         </h4>
-                        <p className="text-xs text-gray-500 font-semibold">
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">
                           {theatre.location}, {theatre.city}
                         </p>
                       </div>
 
                       {/* Show Pills */}
-                      <div className="flex flex-wrap gap-2.5">
+                      <div className="flex flex-wrap gap-2.5 pt-1">
                         {theatre.shows.map((show) => {
                           const showTimeObj = new Date(show.showTime);
                           const formattedTime = showTimeObj.toLocaleTimeString(
@@ -345,12 +349,12 @@ export default function MovieDetailPage() {
                             <button
                               key={show.id}
                               onClick={() => navigate(`/seat/${show.id}`)}
-                              className="group flex flex-col items-center px-4 py-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-xl text-center transition-all cursor-pointer shadow-sm min-w-[100px]"
+                              className="group flex flex-col items-center px-4.5 py-2.5 bg-zinc-950 border border-zinc-850 hover:border-rose-500 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] rounded-2xl text-center transition-all duration-300 cursor-pointer min-w-[105px]"
                             >
-                              <span className="text-sm font-black text-indigo-400 group-hover:text-white transition-colors">
+                              <span className="text-xs font-black text-rose-500 group-hover:text-white transition-colors">
                                 {formattedTime}
                               </span>
-                              <span className="text-[10px] text-gray-500 font-bold mt-1 uppercase">
+                              <span className="text-[9px] text-zinc-500 font-black mt-1.5 uppercase tracking-widest opacity-60">
                                 Sc. {show.screenNumber || 1}
                               </span>
                             </button>

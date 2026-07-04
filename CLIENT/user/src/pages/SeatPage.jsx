@@ -178,7 +178,7 @@ export default function SeatPage() {
           email: user?.email || "",
         },
         theme: {
-          color: "#6366f1",
+          color: "#F84464", // Crimson Red theme matching BookMyShow
         },
         modal: {
           ondismiss: function () {
@@ -204,30 +204,33 @@ export default function SeatPage() {
   const formattedDate = showTime ? showTime.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+    <div className="min-h-screen text-white flex flex-col relative overflow-hidden">
+      {/* Top projector light beam effect */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-rose-500/8 via-transparent to-transparent blur-3xl pointer-events-none -z-10"></div>
+      
       <Header selectedCity={selectedCity} onCityChange={handleCityChange} />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-8 flex flex-col justify-between">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-8 flex flex-col justify-between relative z-10">
         
         {/* Detail Summary Header */}
         {seatData && (
-          <div className="mb-8 p-4 rounded-xl border border-slate-900 bg-slate-900/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="mb-8 p-5 rounded-3xl border border-zinc-800 bg-zinc-900/20 backdrop-blur-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <span className="text-xs text-indigo-400 font-bold uppercase tracking-wider">Booking Screen</span>
-              <h2 className="text-xl font-bold mt-1 text-white">{seatData.movie?.title}</h2>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <span className="text-[10px] text-rose-400 font-black uppercase tracking-widest">Booking Screen</span>
+              <h2 className="text-xl font-black mt-1 text-zinc-100 uppercase tracking-wide">{seatData.movie?.title}</h2>
+              <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider mt-1">
                 {seatData.theatre?.name} • {seatData.theatre?.location}
               </p>
             </div>
             
-            <div className="flex gap-4 border-l border-slate-900 pl-0 md:pl-6 text-sm">
+            <div className="flex gap-6 border-t md:border-t-0 md:border-l border-zinc-800 pt-4 md:pt-0 pl-0 md:pl-6 text-xs">
               <div>
-                <span className="text-gray-500 text-xs block">Date & Time</span>
-                <span className="text-white font-bold mt-0.5 block">{formattedDate} at {formattedTime}</span>
+                <span className="text-zinc-500 uppercase tracking-wider font-bold block mb-1">Date & Time</span>
+                <span className="text-zinc-200 font-black block">{formattedDate} at {formattedTime}</span>
               </div>
               <div>
-                <span className="text-gray-500 text-xs block">Screen</span>
-                <span className="text-white font-bold mt-0.5 block">Auditorium {seatData.screenNumber || 1}</span>
+                <span className="text-zinc-500 uppercase tracking-wider font-bold block mb-1">Screen</span>
+                <span className="text-zinc-200 font-black block uppercase">Auditorium {seatData.screenNumber || 1}</span>
               </div>
             </div>
           </div>
@@ -235,52 +238,54 @@ export default function SeatPage() {
 
         {/* Seat Layout Map */}
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center">
-            <svg className="animate-spin h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24">
+          <div className="py-24 flex flex-col items-center justify-center">
+            <svg className="animate-spin h-10 w-10 text-rose-500" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span className="text-gray-500 mt-4 text-xs font-semibold">Generating seat map...</span>
+            <span className="text-zinc-500 mt-4 text-xs font-bold uppercase tracking-wider">Generating seat map...</span>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center my-6">
             
             {/* Screen mock illustration */}
-            <div className="w-full max-w-md mx-auto mb-16 text-center">
-              <div className="w-full h-2.5 bg-gradient-to-b from-indigo-500/80 to-transparent rounded-full filter blur-[1px] shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
-              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.25em] mt-3 block">Cinema Screen This Way</span>
+            <div className="w-full max-w-lg mx-auto mb-16 text-center relative">
+              <div className="w-full h-1.5 bg-gradient-to-r from-rose-500/20 via-rose-500 to-rose-500/20 rounded-full shadow-[0_-5px_15px_rgba(244,63,94,0.6)]"></div>
+              {/* Projection glow shape */}
+              <div className="absolute top-1.5 left-12 right-12 h-20 bg-gradient-to-b from-rose-500/5 to-transparent blur-md -z-10 rounded-b-full"></div>
+              <span className="text-[9px] text-zinc-500 font-black uppercase tracking-[0.25em] mt-3.5 block">All eyes this way (Screen)</span>
             </div>
 
             {error && (
-              <div className="mb-6 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs w-full max-w-md text-center">
+              <div className="mb-6 p-4.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs w-full max-w-md text-center font-bold tracking-wide uppercase">
                 {error}
               </div>
             )}
 
             {/* Seat Map */}
-            <div className="w-full overflow-x-auto pb-4 flex justify-center">
-              <div className="flex flex-col gap-2.5 min-w-[600px] px-4">
+            <div className="w-full overflow-x-auto pb-6 flex justify-center">
+              <div className="flex flex-col gap-3.5 min-w-[650px] px-6">
                 {Object.keys(groupedSeats).map((row) => (
-                  <div key={row} className="flex items-center gap-4">
+                  <div key={row} className="flex items-center gap-5">
                     {/* Left row label */}
-                    <span className="w-6 text-sm font-black text-gray-600 text-center uppercase">{row}</span>
+                    <span className="w-6 text-sm font-black text-zinc-600 text-center uppercase">{row}</span>
 
                     {/* Seat row items */}
-                    <div className="flex-1 flex items-center justify-center gap-1.5">
+                    <div className="flex-1 flex items-center justify-center gap-2">
                       {groupedSeats[row].map((seat) => {
                         const isSelected = selected.includes(seat.seatNumber);
                         const isBooked = seat.status === "BOOKED" || seat.status === "LOCKED";
                         
                         // Dynamic class based on pricing categories
-                        let catStyles = "bg-slate-800 hover:bg-slate-750 text-gray-300 border-slate-700";
+                        let catStyles = "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700";
                         if (seat.category === "PREMIUM") {
-                          catStyles = "bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border-amber-500/30";
+                          catStyles = "bg-amber-600/15 hover:bg-amber-600/25 text-amber-300 border-amber-500/25";
                         } else if (seat.category === "STANDARD") {
-                          catStyles = "bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-300 border-indigo-500/20";
+                          catStyles = "bg-rose-600/10 hover:bg-rose-600/20 text-rose-300 border-rose-500/15";
                         }
 
                         if (isSelected) {
-                          catStyles = "bg-emerald-500 text-slate-950 font-black border-emerald-400 shadow-md shadow-emerald-500/20";
+                          catStyles = "bg-rose-600 text-white font-black border-rose-500 shadow-md shadow-rose-600/30 scale-105";
                         }
 
                         return (
@@ -288,8 +293,8 @@ export default function SeatPage() {
                             key={seat.seatNumber}
                             disabled={isBooked}
                             onClick={() => handleSeatClick(seat.seatNumber)}
-                            className={`w-8 h-8 rounded-lg text-[10px] font-bold border transition-all flex items-center justify-center cursor-pointer ${catStyles} ${isBooked ? "opacity-25 bg-slate-900 border-slate-950 text-gray-600 cursor-not-allowed border-dashed line-through" : ""}`}
-                            title={`${seat.seatNumber} - ${seat.category} (₹${seat.price})`}
+                            className={`w-8.5 h-8.5 rounded-xl text-[10px] font-black border transition-all flex items-center justify-center cursor-pointer ${catStyles} ${isBooked ? "opacity-20 bg-zinc-900 border-zinc-950 text-zinc-650 cursor-not-allowed line-through" : ""}`}
+                            title={`${seat.seatNumber} - {seat.category} (₹${seat.price})`}
                           >
                             {seat.seatNumber.substring(1)}
                           </button>
@@ -298,33 +303,33 @@ export default function SeatPage() {
                     </div>
 
                     {/* Right row label */}
-                    <span className="w-6 text-sm font-black text-gray-600 text-center uppercase">{row}</span>
+                    <span className="w-6 text-sm font-black text-zinc-600 text-center uppercase">{row}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Legends panel */}
-            <div className="flex flex-wrap items-center justify-center gap-6 mt-12 text-xs font-semibold text-gray-400">
+            <div className="flex flex-wrap items-center justify-center gap-6 mt-12 text-[10px] font-bold text-zinc-500 uppercase tracking-wider bg-zinc-900/30 border border-zinc-850 px-6 py-3 rounded-full">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-emerald-500 border border-emerald-400"></div>
-                <span>Selected</span>
+                <div className="w-3.5 h-3.5 rounded bg-rose-600 border border-rose-500"></div>
+                <span className="text-zinc-300">Selected</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-amber-500/20 border border-amber-500/30"></div>
-                <span>Premium (₹250)</span>
+                <div className="w-3.5 h-3.5 rounded bg-amber-500/20 border border-amber-500/30"></div>
+                <span className="text-zinc-400">Premium (₹250)</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-indigo-500/20 border border-indigo-500/20"></div>
-                <span>Standard (₹200)</span>
+                <div className="w-3.5 h-3.5 rounded bg-rose-500/10 border border-rose-500/20"></div>
+                <span className="text-zinc-400">Standard (₹200)</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-slate-800 border border-slate-700"></div>
-                <span>Economy (₹150)</span>
+                <div className="w-3.5 h-3.5 rounded bg-zinc-800 border border-zinc-700"></div>
+                <span className="text-zinc-400">Economy (₹150)</span>
               </div>
               <div className="flex items-center gap-2 opacity-50">
-                <div className="w-4 h-4 rounded bg-slate-900 border border-slate-950 line-through"></div>
-                <span>Unavailable</span>
+                <div className="w-3.5 h-3.5 rounded bg-zinc-900 border border-zinc-950 line-through"></div>
+                <span className="text-zinc-400">Unavailable</span>
               </div>
             </div>
 
@@ -332,25 +337,25 @@ export default function SeatPage() {
         )}
 
         {/* Footer Checkout Summary */}
-        <div className="border-t border-slate-900 pt-6 mt-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="border-t border-zinc-900 pt-8 mt-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="text-center sm:text-left">
             {selected.length > 0 ? (
               <>
-                <span className="text-xs text-gray-500 font-bold uppercase">Selected Seats ({selected.length})</span>
-                <p className="text-sm font-black text-white mt-0.5 tracking-wide uppercase">
+                <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Selected Seats ({selected.length})</span>
+                <p className="text-sm font-black text-rose-500 mt-1 tracking-wide uppercase">
                   {selected.join(", ")}
                 </p>
               </>
             ) : (
-              <span className="text-sm text-gray-400 italic">Please select at least one seat to book.</span>
+              <span className="text-xs text-zinc-400 italic">Please select at least one seat to book.</span>
             )}
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-8">
             {selected.length > 0 && (
               <div className="text-right">
-                <span className="text-xs text-gray-500 font-bold uppercase block">Total Payable</span>
-                <span className="text-2xl font-black text-emerald-400 mt-0.5 block">
+                <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest block">Total Payable</span>
+                <span className="text-2xl font-black text-rose-400 mt-0.5 block tracking-wide">
                   ₹{calculateTotalAmount()}
                 </span>
               </div>
@@ -359,7 +364,7 @@ export default function SeatPage() {
             <button
               onClick={handleCheckout}
               disabled={selected.length === 0 || bookingLoading}
-              className="px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed font-extrabold text-sm transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-2"
+              className="px-8 py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed font-black text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-rose-600/20 flex items-center gap-2"
             >
               {bookingLoading ? (
                 <>
