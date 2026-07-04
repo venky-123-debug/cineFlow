@@ -10,7 +10,6 @@ export default function AdminDashboard() {
   const { user } = useSelector((state) => state.auth);
   
   const [bannerFile, setBannerFile] = useState(null);
-  const [posterFile, setPosterFile] = useState(null);
   
   // Tab State: "dashboard", "movies", "theatres", "shows", "bookings"
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -201,11 +200,6 @@ export default function AdminDashboard() {
       formData.append("censorRating", movieForm.censorRating);
       formData.append("trailerUrl", movieForm.trailerUrl);
       formData.append("releaseDate", movieForm.releaseDate);
-      if (posterFile) {
-        formData.append("poster", posterFile);
-      } else if (movieForm.poster) {
-        formData.append("poster", movieForm.poster);
-      }
 
       const genres = movieForm.genre
         .split(",")
@@ -355,16 +349,13 @@ export default function AdminDashboard() {
     }
   };
 
-  // Edit Initiators
   const initMovieEdit = (movie) => {
     setBannerFile(null);
-    setPosterFile(null);
     setMovieForm({
       title: movie.title || "",
       description: movie.description || "",
       duration: movie.duration || 120,
       genre: movie.genre?.join(", ") || "",
-      poster: movie.poster || "",
       banner: movie.banner || "",
       trailerUrl: movie.trailerUrl || "",
       rating: movie.rating || 8,
@@ -500,13 +491,11 @@ export default function AdminDashboard() {
                 <button
                   onClick={() => {
                     setBannerFile(null);
-                    setPosterFile(null);
                     setMovieForm({
                       title: "",
                       description: "",
                       duration: 120,
                       genre: "",
-                      poster: "",
                       banner: "",
                       trailerUrl: "",
                       rating: 8,
@@ -740,9 +729,9 @@ export default function AdminDashboard() {
                                 className="border-b border-slate-900 hover:bg-slate-900/40"
                               >
                                 <td className="p-4 font-semibold text-gray-200 flex items-center gap-3">
-                                  {(movie.banner || movie.poster) && (
+                                  {movie.banner && (
                                     <SecureImage
-                                      src={movie.banner || movie.poster}
+                                      src={movie.banner}
                                       alt=""
                                       className="w-8 aspect-2/3 object-cover rounded"
                                     />
@@ -1206,33 +1195,6 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
-                      Poster URL
-                    </label>
-                    <input
-                      type="text"
-                      value={movieForm.poster}
-                      onChange={(e) =>
-                        setMovieForm({ ...movieForm, poster: e.target.value })
-                      }
-                      placeholder="e.g. https://domain.com/poster.jpg"
-                      className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
-                      Upload Poster File
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setPosterFile(e.target.files[0])}
-                      className="w-full text-xs text-gray-400 file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-black file:bg-amber-500/10 file:text-amber-400 hover:file:bg-amber-500/20 cursor-pointer border border-slate-800 p-1 bg-slate-950 rounded-lg"
-                    />
-                  </div>
-                </div>
 
                  <div className="grid grid-cols-2 gap-4">
                   <div>

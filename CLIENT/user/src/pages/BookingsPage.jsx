@@ -152,9 +152,9 @@ export default function BookingsPage() {
                   <div className="flex-1 p-6 flex flex-col sm:flex-row gap-6">
                     {/* Movie Poster */}
                     <div className="w-[90px] aspect-2/3 rounded-lg overflow-hidden bg-slate-800 self-center sm:self-start flex-shrink-0 border border-slate-800">
-                      {movie?.poster || movie?.banner ? (
+                      {movie?.banner ? (
                         <SecureImage
-                          src={movie.poster || movie.banner}
+                          src={movie.banner}
                           alt=""
                           className="w-full h-full object-cover"
                         />

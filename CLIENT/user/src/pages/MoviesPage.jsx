@@ -112,9 +112,9 @@ export default function MoviesPage() {
               >
                 {/* Poster Image Container */}
                 <div className="aspect-[2/3] w-full bg-slate-800 relative overflow-hidden">
-                  {movie.banner || movie.poster ? (
+                  {movie.banner ? (
                     <SecureImage
-                      src={movie.banner || movie.poster}
+                      src={movie.banner}
                       alt={movie.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />

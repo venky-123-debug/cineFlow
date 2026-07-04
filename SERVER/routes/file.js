@@ -54,10 +54,9 @@ app.get("/:fileHash", async (req, res) => {
       return res.json(response)
     }
 
-    // Directly read the file as buffer using fs.promises and send it
-    const fileBuffer = await fs.readFile(filePath)
+    // Directly serve the file using res.sendFile with a root option, avoiding the path module
     res.set("Content-Type", mimeType)
-    return res.send(fileBuffer)
+    return res.sendFile(filename, { root: uploadDir })
   } catch (error) {
     response = await errorhandler(error, response)
     return res.json(response)

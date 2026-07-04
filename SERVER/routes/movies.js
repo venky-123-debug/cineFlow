@@ -133,15 +133,15 @@ app.get("/:id", async (req, res) => {
   }
 })
 
-//  ADMIN: CREATE MOVIE (with optional banner & poster upload)
-app.post("/", upload.fields([{ name: "poster", maxCount: 1 }, { name: "banner", maxCount: 1 }]), async (req, res) => {
+//  ADMIN: CREATE MOVIE (with optional banner upload)
+app.post("/", upload.single("banner"), async (req, res) => {
   let response = { success: false }
   try {
     if (!req.headers["access-token"]) throw "No token"
     const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
     if (tokenData.role !== "ADMIN") throw "Admin access only"
 
-    const { title, description, duration, genre, poster, banner, trailerUrl, releaseDate, language, rating, censorRating } =
+    const { title, description, duration, genre, banner, trailerUrl, releaseDate, language, rating, censorRating } =
       req.body
 
     if (!title || !description || !duration || !language) throw "Title, description, duration and language are required"
@@ -151,18 +151,11 @@ app.post("/", upload.fields([{ name: "poster", maxCount: 1 }, { name: "banner", 
     if (thisMovie) throw "Movie already exists"
 
     // Process uploads
-    let posterUrl = poster || null
     let bannerUrl = banner || null
 
-    if (req.files) {
-      if (req.files.poster && req.files.poster[0]) {
-        const uploadResult = await handleImageUpload(req.files.poster[0])
-        if (uploadResult) posterUrl = uploadResult.imageUrl
-      }
-      if (req.files.banner && req.files.banner[0]) {
-        const uploadResult = await handleImageUpload(req.files.banner[0])
-        if (uploadResult) bannerUrl = uploadResult.imageUrl
-      }
+    if (req.file) {
+      const uploadResult = await handleImageUpload(req.file)
+      if (uploadResult) bannerUrl = uploadResult.imageUrl
     }
 
     let newMovie = await new Movie({
@@ -170,7 +163,6 @@ app.post("/", upload.fields([{ name: "poster", maxCount: 1 }, { name: "banner", 
       description,
       duration,
       genre: genre ? (Array.isArray(genre) ? genre : [genre]) : [],
-      poster: posterUrl,
       banner: bannerUrl,
       trailerUrl,
       releaseDate,
@@ -190,21 +182,20 @@ app.post("/", upload.fields([{ name: "poster", maxCount: 1 }, { name: "banner", 
   }
 })
 
-app.patch("/:id", upload.fields([{ name: "poster", maxCount: 1 }, { name: "banner", maxCount: 1 }]), async (req, res) => {
+app.patch("/:id", upload.single("banner"), async (req, res) => {
   let response = { success: false }
   try {
     if (!req.headers["access-token"]) throw "No token"
     const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
     if (tokenData.role !== "ADMIN") throw "Admin access only"
 
-    const { title, description, duration, genre, poster, banner, trailerUrl, releaseDate, language, rating, censorRating } = req.body
+    const { title, description, duration, genre, banner, trailerUrl, releaseDate, language, rating, censorRating } = req.body
 
     const updateData = {}
     if (title !== undefined) updateData.title = title
     if (description !== undefined) updateData.description = description
     if (duration !== undefined) updateData.duration = Number(duration)
     if (language !== undefined) updateData.language = language
-    if (poster !== undefined) updateData.poster = poster
     if (banner !== undefined) updateData.banner = banner
     if (trailerUrl !== undefined) updateData.trailerUrl = trailerUrl
     if (releaseDate !== undefined) updateData.releaseDate = releaseDate
@@ -221,15 +212,9 @@ app.patch("/:id", upload.fields([{ name: "poster", maxCount: 1 }, { name: "banne
     }
 
     // Process uploads
-    if (req.files) {
-      if (req.files.poster && req.files.poster[0]) {
-        const uploadResult = await handleImageUpload(req.files.poster[0])
-        if (uploadResult) updateData.poster = uploadResult.imageUrl
-      }
-      if (req.files.banner && req.files.banner[0]) {
-        const uploadResult = await handleImageUpload(req.files.banner[0])
-        if (uploadResult) updateData.banner = uploadResult.imageUrl
-      }
+    if (req.file) {
+      const uploadResult = await handleImageUpload(req.file)
+      if (uploadResult) updateData.banner = uploadResult.imageUrl
     }
 
     let updatedMovie = await Movie.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true }).lean()

@@ -7,13 +7,15 @@ import SecureImage from "../components/SecureImage";
 export default function MovieDetailPage() {
   const { movieId } = useParams();
   const navigate = useNavigate();
-  
+
   const [movie, setMovie] = useState(null);
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
-  const [selectedCity, setSelectedCity] = useState(localStorage.getItem("city") || "Bangalore");
+
+  const [selectedCity, setSelectedCity] = useState(
+    localStorage.getItem("city") || "Bangalore",
+  );
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split("T")[0]; // YYYY-MM-DD
@@ -42,7 +44,7 @@ export default function MovieDetailPage() {
       setError("");
       try {
         const token = localStorage.getItem("token");
-        
+
         // 1. Fetch movie details
         const movieRes = await axios.get(`/api/movies/${movieId}`, {
           headers: { "access-token": token },
@@ -52,10 +54,10 @@ export default function MovieDetailPage() {
         // 2. Fetch grouped schedule by city & date
         const scheduleRes = await axios.get("/api/shows/schedule", {
           headers: { "access-token": token },
-          params: { 
-            movieId, 
-            city: selectedCity, 
-            date: selectedDate 
+          params: {
+            movieId,
+            city: selectedCity,
+            date: selectedDate,
           },
         });
         setSchedule(scheduleRes.data.data || []);
@@ -73,9 +75,24 @@ export default function MovieDetailPage() {
     return (
       <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <svg className="animate-spin h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <svg
+            className="animate-spin h-10 w-10 text-indigo-500"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
           </svg>
           <span className="text-gray-400 mt-4 text-sm">Loading details...</span>
         </div>
@@ -93,21 +110,24 @@ export default function MovieDetailPage() {
           <div className="relative w-full md:h-[400px] bg-slate-900 overflow-hidden flex items-center border-b border-slate-800">
             {/* Blurred background image */}
             <div className="absolute inset-0 z-0 opacity-20 filter blur-2xl scale-110">
-              <SecureImage 
-                src={movie.banner || movie.poster || "/placeholder-banner.jpg"} 
-                alt="" 
+              <SecureImage
+                src={movie.banner || "/placeholder-banner.jpg"}
+                alt=""
                 className="w-full h-full object-cover"
               />
             </div>
             {/* Radial dark gradient mask */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent z-10"></div>
-            
+            <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/80 to-transparent z-10"></div>
+
             {/* Main content layer */}
             <div className="max-w-7xl w-full mx-auto px-6 py-8 relative z-20 flex flex-col md:flex-row gap-8 items-center md:items-end">
               {/* Poster card */}
-              <div className="w-[180px] md:w-[240px] aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-slate-900 -mb-16 md:-mb-24 z-30 self-center md:self-auto">
+              <div
+                className="w-[180px] md:w-[240px] asp
+              ect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-slate-900 -mb-16 md:-mb-24 z-30 self-center md:self-auto"
+              >
                 <SecureImage
-                  src={movie.poster || movie.banner || "/placeholder-poster.jpg"}
+                  src={movie.banner || "/placeholder-poster.jpg"}
                   alt={movie.title}
                   className="w-full h-full object-cover"
                 />
@@ -121,12 +141,15 @@ export default function MovieDetailPage() {
                 <h2 className="text-3xl md:text-5xl font-black mt-3 tracking-wide text-white drop-shadow-md">
                   {movie.title}
                 </h2>
-                
+
                 {/* Metarow */}
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4 text-xs font-semibold text-gray-300">
                   {movie.rating > 0 && (
                     <span className="flex items-center gap-1 bg-amber-400/10 text-amber-300 border border-amber-500/20 px-2.5 py-1 rounded-lg">
-                      <svg className="w-3.5 h-3.5 fill-amber-300" viewBox="0 0 20 20">
+                      <svg
+                        className="w-3.5 h-3.5 fill-amber-300"
+                        viewBox="0 0 20 20"
+                      >
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
                       {movie.rating.toFixed(1)}/10
@@ -137,14 +160,24 @@ export default function MovieDetailPage() {
                   <span>•</span>
                   <span>{movie.language}</span>
                   <span>•</span>
-                  <span>{movie.releaseDate ? new Date(movie.releaseDate).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' }) : "N/A"}</span>
+                  <span>
+                    {movie.releaseDate
+                      ? new Date(movie.releaseDate).toLocaleDateString(
+                          "en-US",
+                          { year: "numeric", month: "long", day: "numeric" },
+                        )
+                      : "N/A"}
+                  </span>
                 </div>
 
                 {/* Genre pills */}
                 {movie.genre && movie.genre.length > 0 && (
                   <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
                     {movie.genre.map((g) => (
-                      <span key={g} className="text-xs px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-gray-400">
+                      <span
+                        key={g}
+                        className="text-xs px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-gray-400"
+                      >
                         {g}
                       </span>
                     ))}
@@ -161,8 +194,15 @@ export default function MovieDetailPage() {
                     rel="noopener noreferrer"
                     className="px-6 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm font-bold text-gray-200 hover:text-white hover:bg-slate-850 flex items-center justify-center gap-2 transition-all shadow-md"
                   >
-                    <svg className="w-4 h-4 text-rose-500 fill-rose-500" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4 text-rose-500 fill-rose-500"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     Watch Trailer
                   </a>
@@ -173,7 +213,6 @@ export default function MovieDetailPage() {
 
           {/* Bottom booking details and schedule */}
           <main className="max-w-7xl w-full mx-auto px-6 py-12 md:py-16 mt-16 md:mt-24 flex flex-col lg:flex-row gap-12">
-            
             {/* Left Column: Description & Synopsis */}
             <div className="flex-1 space-y-6">
               <div>
@@ -184,17 +223,21 @@ export default function MovieDetailPage() {
                   {movie.description}
                 </p>
               </div>
-              
+
               {/* Additional Details */}
               <div className="grid grid-cols-2 gap-4 p-4 rounded-xl border border-slate-900 bg-slate-900/10 text-xs">
                 <div>
                   <span className="text-gray-500 block">Censor Rating</span>
-                  <span className="text-white font-semibold mt-0.5 block">{movie.censorRating || "UA"}</span>
+                  <span className="text-white font-semibold mt-0.5 block">
+                    {movie.censorRating || "UA"}
+                  </span>
                 </div>
                 <div>
                   <span className="text-gray-500 block">Release Date</span>
                   <span className="text-white font-semibold mt-0.5 block">
-                    {movie.releaseDate ? new Date(movie.releaseDate).toLocaleDateString() : "N/A"}
+                    {movie.releaseDate
+                      ? new Date(movie.releaseDate).toLocaleDateString()
+                      : "N/A"}
                   </span>
                 </div>
               </div>
@@ -220,9 +263,15 @@ export default function MovieDetailPage() {
                           : "bg-slate-900/60 border-slate-850 text-gray-400 hover:text-white"
                       }`}
                     >
-                      <span className="text-[10px] uppercase font-bold tracking-wide">{tab.dayName}</span>
-                      <span className="text-lg font-black mt-0.5">{tab.dayNum}</span>
-                      <span className="text-[10px] tracking-wide mt-0.5 font-semibold">{tab.monthName}</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wide">
+                        {tab.dayName}
+                      </span>
+                      <span className="text-lg font-black mt-0.5">
+                        {tab.dayNum}
+                      </span>
+                      <span className="text-[10px] tracking-wide mt-0.5 font-semibold">
+                        {tab.monthName}
+                      </span>
                     </button>
                   );
                 })}
@@ -231,9 +280,24 @@ export default function MovieDetailPage() {
               {/* Schedule List */}
               {loading ? (
                 <div className="py-12 flex justify-center">
-                  <svg className="animate-spin h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin h-8 w-8 text-indigo-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                 </div>
               ) : error ? (
@@ -242,30 +306,41 @@ export default function MovieDetailPage() {
                 </div>
               ) : schedule.length === 0 ? (
                 <div className="text-center py-10 bg-slate-900/10 border border-dashed border-slate-850 rounded-xl text-gray-500 text-sm">
-                  No shows available in <span className="text-indigo-400 font-bold">{selectedCity}</span> on this date.
+                  No shows available in{" "}
+                  <span className="text-indigo-400 font-bold">
+                    {selectedCity}
+                  </span>{" "}
+                  on this date.
                 </div>
               ) : (
                 <div className="space-y-4">
                   {schedule.map((theatre) => (
-                    <div 
+                    <div
                       key={theatre.id}
                       className="p-5 rounded-2xl bg-slate-900/40 border border-slate-850 shadow-md space-y-4"
                     >
                       {/* Theatre Info */}
                       <div>
-                        <h4 className="text-base font-bold text-white tracking-wide">{theatre.name}</h4>
-                        <p className="text-xs text-gray-500 font-semibold">{theatre.location}, {theatre.city}</p>
+                        <h4 className="text-base font-bold text-white tracking-wide">
+                          {theatre.name}
+                        </h4>
+                        <p className="text-xs text-gray-500 font-semibold">
+                          {theatre.location}, {theatre.city}
+                        </p>
                       </div>
 
                       {/* Show Pills */}
                       <div className="flex flex-wrap gap-2.5">
                         {theatre.shows.map((show) => {
                           const showTimeObj = new Date(show.showTime);
-                          const formattedTime = showTimeObj.toLocaleTimeString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          });
+                          const formattedTime = showTimeObj.toLocaleTimeString(
+                            "en-US",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            },
+                          );
                           return (
                             <button
                               key={show.id}
