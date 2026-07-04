@@ -19,14 +19,14 @@ async function handleBannerUpload(file) {
   const fileHash = crypto.createHash("sha256").update(file.buffer).digest("hex")
   const ext = path.extname(file.originalname) || ".jpg"
   const filename = `${fileHash}${ext}`
-  
+
   const uploadDir = path.join(__dirname, "../uploads/movies")
   // Ensure the uploads directory exists using fs.promises
   await fs.mkdir(uploadDir, { recursive: true })
-  
+
   const filePath = path.join(uploadDir, filename)
   const relativeUrl = `/uploads/movies/${filename}`
-  
+
   try {
     // Check if the file already exists using fs.promises.access
     await fs.access(filePath)
@@ -51,7 +51,6 @@ app.get("/", async (req, res) => {
 
     const query = {}
 
-    // Filter by city (BookMyShow style: only movies with active shows in this city)
     if (city) {
       const theatres = await Theatre.find({ city: { $regex: city, $options: "i" } }).select("_id")
       const theatreIds = theatres.map((t) => t._id)
@@ -125,10 +124,8 @@ app.get("/:id", async (req, res) => {
 
     if (!movie) throw "Movie not found"
 
-    movie = utilities.cleanMongoDocument ? utilities.cleanMongoDocument(movie) : movie
-
     response.success = true
-    response.data = movie
+    response.data = utilities.cleanMongoDocument(movie)
   } catch (error) {
     response = await errorhandler(error, response)
   } finally {
@@ -210,42 +207,46 @@ app.patch("/:id", async (req, res) => {
   }
 })
 
-//  ADMIN: UPLOAD MOVIE BANNER
-app.post("/:id/upload-banner", upload.single("banner"), async (req, res) => {
-  let response = { success: false }
-  try {
-    if (!req.headers["access-token"]) throw "No token"
-    const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
-    if (tokenData.role !== "ADMIN") throw "Admin access only"
+// //  ADMIN: UPLOAD MOVIE BANNER
+// app.post("/:id/upload-banner", upload.single("banner"), async (req, res) => {
+//   let response = { success: false }
+//   try {
+//     if (!req.headers["access-token"]) throw "No token"
+//     const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+//     if (tokenData.role !== "ADMIN") throw "Admin access only"
 
-    if (!req.file) throw "No image file provided"
+//     if (!req.file) throw "No image file provided"
 
-    const { id } = req.params
-    if (!mongoose.Types.ObjectId.isValid(id)) throw "Invalid Movie ID"
+//     const { id } = req.params
+//     if (!mongoose.Types.ObjectId.isValid(id)) throw "Invalid Movie ID"
 
-    // Handle banner upload using memory storage & file hashing with fs.promises
-    const uploadResult = await handleBannerUpload(req.file)
-    if (!uploadResult) throw "File processing failed"
+//     // Handle banner upload using memory storage & file hashing with fs.promises
+//     const uploadResult = await handleBannerUpload(req.file)
+//     if (!uploadResult) throw "File processing failed"
 
-    // Update movie with banner URL
-    let updatedMovie = await Movie.findByIdAndUpdate(id, { $set: { banner: uploadResult.bannerUrl } }, { new: true }).lean()
+//     // Update movie with banner URL
+//     let updatedMovie = await Movie.findByIdAndUpdate(
+//       id,
+//       { $set: { banner: uploadResult.bannerUrl } },
+//       { new: true },
+//     ).lean()
 
-    if (!updatedMovie) throw "Movie not found"
+//     if (!updatedMovie) throw "Movie not found"
 
-    updatedMovie = utilities.cleanMongoDocument(updatedMovie)
-    response.success = true
-    response.data = {
-      movie: updatedMovie,
-      bannerUrl: uploadResult.bannerUrl,
-      fileHash: uploadResult.fileHash,
-      message: "Banner uploaded successfully",
-    }
-  } catch (error) {
-    response = await errorhandler(error, response)
-  } finally {
-    res.json(response)
-  }
-})
+//     updatedMovie = utilities.cleanMongoDocument(updatedMovie)
+//     response.success = true
+//     response.data = {
+//       movie: updatedMovie,
+//       bannerUrl: uploadResult.bannerUrl,
+//       fileHash: uploadResult.fileHash,
+//       message: "Banner uploaded successfully",
+//     }
+//   } catch (error) {
+//     response = await errorhandler(error, response)
+//   } finally {
+//     res.json(response)
+//   }
+// })
 
 app.delete("/:id", async (req, res) => {
   let response = { success: false }
@@ -255,7 +256,6 @@ app.delete("/:id", async (req, res) => {
     if (tokenData.role !== "ADMIN") throw "Admin access only"
 
     let updatedMovie = await Movie.findByIdAndDelete(req.params.id).lean()
-
     if (!updatedMovie) throw "Movie not found"
 
     response.success = true
