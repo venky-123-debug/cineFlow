@@ -185,8 +185,7 @@ async function sendTicketEmail({ email, movieTitle, theatreName, seats, showTime
 
     // 4. Send Email
     const mailOptions = {
-      from: `"CineFlow Booking" < "no-reply@cineflow.com">`,
-      // from: `"CineFlow Booking" <${process.env.EMAIL_USER || "no-reply@cineflow.com"}>`,
+      from: `"CineFlow Booking" <${process.env.EMAIL_USER || "no-reply@cineflow.com"}>`,
       to: email,
       subject: `CineFlow Ticket Confirmed: ${movieTitle}`,
       html: emailHtml,

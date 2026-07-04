@@ -255,7 +255,7 @@ app.post("/:id/lock", async (req, res) => {
     // Acquire Redis locks with 10 minutes expiry (600 seconds)
     for (const seat of seats) {
       const lockKey = `lock:show:${id}:seat:${seat}`
-      await redisClient.setEx(lockKey, tokenData.id, Number(process.env.SEAT_LOCK_DURATION || 600)) // Default to 10 minutes if not set
+      await redisClient.setEx(lockKey, Number(process.env.SEAT_LOCK_DURATION || 600), tokenData.id) // Default to 10 minutes if not set
     }
 
     response.success = true
