@@ -38,7 +38,7 @@ export default function Header({ selectedCity, onCityChange, searchQuery, onSear
       }
     };
     fetchCities();
-  }, [selectedCity, onCityChange]);
+  }, []);
 
   const handleLogout = () => {
     dispatch({ type: 'auth/logout' });
