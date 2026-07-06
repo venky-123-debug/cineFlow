@@ -171,11 +171,14 @@ app.get("/", (req, res) => {
   res.json({ success: true, message: "CineFlow Movie Booking API is running" })
 })
 
+const { startScheduler } = require("./scripts/scheduler")
+
 const start = async () => {
   try {
     await connectDB()
     await redisClient.connect()
     console.log("Redis Connected")
+    startScheduler()
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
   } catch (error) {
     console.error(error)
