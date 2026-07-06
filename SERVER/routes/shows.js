@@ -267,7 +267,83 @@ app.post("/:id/lock", async (req, res) => {
   }
 })
 
-//  ADMIN: CREATE SHOW
+//  ADMIN: BULK CREATE SHOWS (multiple dates × multiple times)
+app.post("/bulk", async (req, res) => {
+  let response = { success: false }
+  try {
+    if (!req.headers["access-token"]) throw "No token"
+    const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+    if (tokenData.role !== "ADMIN") throw "Admin access only"
+
+    const { movieId, theatreId, screenNumber, price, availableSeats, dates, times } = req.body
+
+    if (!movieId || !theatreId || !price) throw "movieId, theatreId and price are required"
+    if (!dates || !Array.isArray(dates) || dates.length === 0) throw "At least one date is required"
+    if (!times || !Array.isArray(times) || times.length === 0) throw "At least one time slot is required"
+
+    // Validate movie and theatre exist
+    const movieExists = await Movie.findById(movieId)
+    if (!movieExists) throw "Movie not found"
+    const theatreExists = await Theatre.findById(theatreId)
+    if (!theatreExists) throw "Theatre not found"
+
+    const seatsCount = availableSeats || theatreExists.totalSeats
+    const screenNum = screenNumber || 1
+
+    const created = []
+    const skipped = []
+    const errors = []
+
+    for (const dateStr of dates) {
+      for (const timeStr of times) {
+        try {
+          // Build combined datetime  e.g.  "2026-07-10T18:30:00"
+          const showDateTime = new Date(`${dateStr}T${timeStr}:00`)
+          if (isNaN(showDateTime.getTime())) {
+            errors.push(`Invalid date/time: ${dateStr} ${timeStr}`)
+            continue
+          }
+
+          // Check for duplicate show at same theatre + screen + datetime
+          const duplicate = await Show.findOne({
+            theatreId,
+            screenNumber: screenNum,
+            showTime: showDateTime,
+          })
+
+          if (duplicate) {
+            skipped.push(`${dateStr} ${timeStr} (duplicate)`)
+            continue
+          }
+
+          const newShow = await new Show({
+            movieId,
+            theatreId,
+            screenNumber: screenNum,
+            showTime: showDateTime,
+            showDate: new Date(dateStr),
+            price,
+            availableSeats: seatsCount,
+          }).save()
+
+          created.push(utilities.cleanMongoDocument(newShow))
+        } catch (innerErr) {
+          errors.push(`${dateStr} ${timeStr}: ${innerErr.message || innerErr}`)
+        }
+      }
+    }
+
+    response.success = true
+    response.data = { created, skipped, errors }
+    response.message = `Created ${created.length} shows. Skipped ${skipped.length} duplicates. ${errors.length} errors.`
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
+//  ADMIN: CREATE SHOW (single)
 app.post("/", async (req, res) => {
   let response = { success: false }
   try {

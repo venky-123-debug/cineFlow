@@ -19,10 +19,9 @@ export default function LoginPage() {
     setSuccessMsg("");
 
     try {
-      const axiosInstance = require("axios"); // Import axios inside handler or standard import at top
       if (isLogin) {
         // Admin Sign In
-        const res = await axiosInstance.post("/api/auth/login", {
+        const res = await axios.post("/api/auth/login", {
           email: form.email,
           password: form.password,
         });
@@ -58,7 +57,7 @@ export default function LoginPage() {
         }
       } else {
         // Admin Registration
-        const res = await axiosInstance.post("/api/auth/admin/register", {
+        const res = await axios.post("/api/auth/admin/register", {
           name: form.name,
           email: form.email,
           password: form.password,
@@ -91,7 +90,7 @@ export default function LoginPage() {
       <CinemaBackground />
 
       {/* Cinematic light projection glows */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-rose-500/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10 animate-pulse"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[radial-gradient(circle_at_top,var(--tw-gradient-stops))] from-rose-500/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10 animate-pulse"></div>
       <div className="absolute bottom-[-100px] right-[-50px] w-96 h-96 bg-rose-500/5 rounded-full blur-3xl -z-10"></div>
       <div className="absolute top-[-100px] left-[-50px] w-96 h-96 bg-purple-500/5 rounded-full blur-3xl -z-10"></div>
 

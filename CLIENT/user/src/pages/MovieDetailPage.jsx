@@ -109,7 +109,7 @@ export default function MovieDetailPage() {
       <CinemaBackground />
 
       {/* Top spotlight projection overlay */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-rose-500/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[radial-gradient(circle_at_top,var(--tw-gradient-stops))] from-rose-500/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10"></div>
 
       <Header selectedCity={selectedCity} onCityChange={handleCityChange} />
 
@@ -126,12 +126,12 @@ export default function MovieDetailPage() {
               />
             </div>
             {/* Radial dark gradient mask */}
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-10"></div>
+            <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/80 to-transparent z-10"></div>
 
             {/* Main content layer */}
             <div className="max-w-7xl w-full mx-auto px-6 py-8 relative z-20 flex flex-col md:flex-row gap-8 items-center md:items-end">
               {/* Poster card */}
-              <div className="w-[180px] md:w-[240px] aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-950 -mb-16 md:-mb-24 z-30 self-center md:self-auto">
+              <div className="w-[180px] md:w-[240px] aspect-2/3 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-950 -mb-16 md:-mb-24 z-30 self-center md:self-auto">
                 <SecureImage
                   src={movie.banner || "/placeholder-poster.jpg"}
                   alt={movie.title}

@@ -78,6 +78,25 @@ export default function AdminDashboard() {
     availableSeats: 150,
   });
 
+  // Bulk scheduling state
+  const [bulkForm, setBulkForm] = useState({
+    movieId: "",
+    theatreId: "",
+    screenNumber: 1,
+    price: 200,
+    availableSeats: 150,
+    // date range
+    dateFrom: new Date().toISOString().split("T")[0],
+    dateTo: "",
+    // or individual dates
+    selectedDates: [],
+    // time slots
+    times: ["10:00", "14:00", "18:00"],
+    // mode: "range" | "individual"
+    dateMode: "range",
+  });
+  const [bulkResult, setBulkResult] = useState(null); // { created, skipped, errors }
+
   // Check auth - must be Admin
   useEffect(() => {
     if (!user || user.role !== "ADMIN") {
@@ -341,6 +360,60 @@ export default function AdminDashboard() {
     }
   };
 
+  // Bulk show scheduling — generate date list from range or individual selection
+  const getBulkDates = () => {
+    if (bulkForm.dateMode === "individual") return bulkForm.selectedDates;
+    if (!bulkForm.dateFrom || !bulkForm.dateTo) return bulkForm.dateFrom ? [bulkForm.dateFrom] : [];
+    const result = [];
+    const cur = new Date(bulkForm.dateFrom);
+    const end = new Date(bulkForm.dateTo);
+    while (cur <= end) {
+      result.push(cur.toISOString().split("T")[0]);
+      cur.setDate(cur.getDate() + 1);
+    }
+    return result;
+  };
+
+  const handleBulkShowSubmit = async (e) => {
+    e.preventDefault();
+    setBulkResult(null);
+    setActionLoading(true);
+    setError("");
+    const token = localStorage.getItem("token");
+    try {
+      const dates = getBulkDates();
+      const times = bulkForm.times.filter((t) => t.trim() !== "");
+      if (dates.length === 0) throw new Error("Select at least one date");
+      if (times.length === 0) throw new Error("Add at least one time slot");
+
+      const res = await axios.post(
+        "/api/shows/bulk",
+        {
+          movieId: bulkForm.movieId,
+          theatreId: bulkForm.theatreId,
+          screenNumber: bulkForm.screenNumber,
+          price: bulkForm.price,
+          availableSeats: bulkForm.availableSeats,
+          dates,
+          times,
+        },
+        { headers: { "access-token": token } }
+      );
+
+      if (res.data.success) {
+        setBulkResult(res.data.data);
+        setSuccessMsg(res.data.message);
+        loadData();
+      } else {
+        setError(res.data.message || "Bulk scheduling failed.");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Operation failed.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const initMovieEdit = (movie) => {
     setBannerFile(null);
     setMovieForm({
@@ -524,23 +597,46 @@ export default function AdminDashboard() {
                 </button>
               )}
               {activeTab === "shows" && (
-                <button
-                  onClick={() => {
-                    setShowForm({
-                      movieId: movies[0]?.id || "",
-                      theatreId: theatres[0]?.id || "",
-                      screenNumber: 1,
-                      showTime: "18:00",
-                      showDate: new Date().toISOString().split("T")[0],
-                      price: 200,
-                      availableSeats: theatres[0]?.totalSeats || 150,
-                    });
-                    setShowModal("addShow");
-                  }}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-black shadow-lg"
-                >
-                  + Add Show
-                </button>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => {
+                      setShowForm({
+                        movieId: movies[0]?.id || "",
+                        theatreId: theatres[0]?.id || "",
+                        screenNumber: 1,
+                        showTime: "18:00",
+                        showDate: new Date().toISOString().split("T")[0],
+                        price: 200,
+                        availableSeats: theatres[0]?.totalSeats || 150,
+                      });
+                      setShowModal("addShow");
+                    }}
+                    className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white rounded-xl text-xs font-black shadow"
+                  >
+                    + Add Show
+                  </button>
+                  <button
+                    onClick={() => {
+                      setBulkForm({
+                        movieId: movies[0]?.id || "",
+                        theatreId: theatres[0]?.id || "",
+                        screenNumber: 1,
+                        price: 200,
+                        availableSeats: theatres[0]?.totalSeats || 150,
+                        dateFrom: new Date().toISOString().split("T")[0],
+                        dateTo: "",
+                        selectedDates: [],
+                        times: ["10:00", "14:00", "18:00"],
+                        dateMode: "range",
+                      });
+                      setBulkResult(null);
+                      setShowModal("bulkShow");
+                    }}
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-black shadow-lg"
+                  >
+                    ⚡ Bulk Schedule
+                  </button>
+                </div>
               )}
             </div>
 
@@ -1528,6 +1624,261 @@ export default function AdminDashboard() {
                 </button>
               </form>
             )}
+
+            {/* ─── BULK SCHEDULING FORM ─── */}
+            {showModal === "bulkShow" && (() => {
+              const previewDates = getBulkDates();
+              const totalShows = previewDates.length * bulkForm.times.filter(t => t.trim()).length;
+              return (
+                <form onSubmit={handleBulkShowSubmit} className="space-y-4">
+                  {/* Header */}
+                  <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
+                    <span className="text-lg">⚡</span>
+                    <div>
+                      <h3 className="text-sm font-black text-white">Bulk Schedule Shows</h3>
+                      <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
+                        Create {totalShows} show{totalShows !== 1 ? "s" : ""} across {previewDates.length} date{previewDates.length !== 1 ? "s" : ""} × {bulkForm.times.filter(t=>t.trim()).length} time{bulkForm.times.filter(t=>t.trim()).length !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Movie & Theatre */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Movie</label>
+                      <select
+                        required
+                        value={bulkForm.movieId}
+                        onChange={(e) => setBulkForm({ ...bulkForm, movieId: e.target.value })}
+                        className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
+                      >
+                        <option value="" disabled>Select Movie</option>
+                        {movies.map((m) => (
+                          <option key={m.id} value={m.id}>{m.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Theatre</label>
+                      <select
+                        required
+                        value={bulkForm.theatreId}
+                        onChange={(e) => {
+                          const th = theatres.find(t => t.id === e.target.value);
+                          setBulkForm({ ...bulkForm, theatreId: e.target.value, availableSeats: th?.totalSeats || bulkForm.availableSeats });
+                        }}
+                        className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
+                      >
+                        <option value="" disabled>Select Theatre</option>
+                        {theatres.map((t) => (
+                          <option key={t.id} value={t.id}>{t.name} ({t.city})</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Screen / Price / Seats */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Screen No.</label>
+                      <input type="number" min="1" required value={bulkForm.screenNumber}
+                        onChange={(e) => setBulkForm({ ...bulkForm, screenNumber: parseInt(e.target.value) })}
+                        className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Base Price (₹)</label>
+                      <input type="number" min="50" required value={bulkForm.price}
+                        onChange={(e) => setBulkForm({ ...bulkForm, price: parseInt(e.target.value) })}
+                        className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Capacity</label>
+                      <input type="number" min="1" required value={bulkForm.availableSeats}
+                        onChange={(e) => setBulkForm({ ...bulkForm, availableSeats: parseInt(e.target.value) })}
+                        className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600" />
+                    </div>
+                  </div>
+
+                  {/* DATE SELECTION */}
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">📅 Date Selection</span>
+                      <div className="flex gap-1">
+                        {["range", "individual"].map((mode) => (
+                          <button key={mode} type="button"
+                            onClick={() => setBulkForm({ ...bulkForm, dateMode: mode, selectedDates: [] })}
+                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase transition-all ${
+                              bulkForm.dateMode === mode
+                                ? "bg-rose-600 text-white"
+                                : "bg-zinc-900 border border-zinc-700 text-zinc-400 hover:text-white"
+                            }`}>
+                            {mode === "range" ? "Date Range" : "Pick Dates"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {bulkForm.dateMode === "range" ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">From Date</label>
+                          <input type="date" required value={bulkForm.dateFrom}
+                            onChange={(e) => setBulkForm({ ...bulkForm, dateFrom: e.target.value })}
+                            className="w-full p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">To Date</label>
+                          <input type="date" value={bulkForm.dateTo}
+                            min={bulkForm.dateFrom}
+                            onChange={(e) => setBulkForm({ ...bulkForm, dateTo: e.target.value })}
+                            className="w-full p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex gap-2 items-center">
+                          <input type="date"
+                            className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600 flex-1"
+                            onChange={(e) => {
+                              const d = e.target.value;
+                              if (d && !bulkForm.selectedDates.includes(d)) {
+                                setBulkForm({ ...bulkForm, selectedDates: [...bulkForm.selectedDates, d].sort() });
+                              }
+                              e.target.value = "";
+                            }}
+                          />
+                          <span className="text-[10px] text-zinc-500 font-bold">← pick to add</span>
+                        </div>
+                        {bulkForm.selectedDates.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {bulkForm.selectedDates.map((d) => (
+                              <span key={d} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-600/15 border border-rose-600/30 text-rose-400 text-[10px] font-bold">
+                                {d}
+                                <button type="button" onClick={() =>
+                                  setBulkForm({ ...bulkForm, selectedDates: bulkForm.selectedDates.filter(x => x !== d) })
+                                } className="hover:text-white transition-colors">×</button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {bulkForm.selectedDates.length === 0 && (
+                          <p className="text-[10px] text-zinc-600 italic">No dates selected yet.</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Date preview pills */}
+                    {previewDates.length > 0 && (
+                      <div className="pt-2 border-t border-zinc-800">
+                        <span className="text-[10px] font-black text-zinc-500 uppercase">Preview — {previewDates.length} date{previewDates.length !== 1 ? "s" : ""}:</span>
+                        <div className="flex flex-wrap gap-1.5 mt-1.5 max-h-[80px] overflow-y-auto">
+                          {previewDates.map((d) => (
+                            <span key={d} className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 font-bold">
+                              {new Date(d + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short", weekday: "short" })}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* TIME SLOTS */}
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">🕐 Time Slots</span>
+                      <button type="button"
+                        onClick={() => setBulkForm({ ...bulkForm, times: [...bulkForm.times, ""] })}
+                        className="px-3 py-1 rounded-full text-[10px] font-black bg-zinc-800 border border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-700 transition-all">
+                        + Add Slot
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {bulkForm.times.map((t, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <span className="text-[10px] font-black text-zinc-600 w-5">#{i + 1}</span>
+                          <input type="time" value={t} required
+                            onChange={(e) => {
+                              const newTimes = [...bulkForm.times];
+                              newTimes[i] = e.target.value;
+                              setBulkForm({ ...bulkForm, times: newTimes });
+                            }}
+                            className="flex-1 p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600" />
+                          {bulkForm.times.length > 1 && (
+                            <button type="button"
+                              onClick={() => setBulkForm({ ...bulkForm, times: bulkForm.times.filter((_, j) => j !== i) })}
+                              className="text-zinc-600 hover:text-rose-400 text-lg leading-none transition-colors">×</button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Schedule Matrix Preview */}
+                  {previewDates.length > 0 && bulkForm.times.filter(t => t.trim()).length > 0 && (
+                    <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                      <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider block mb-2">
+                        📋 Schedule Matrix — {totalShows} show{totalShows !== 1 ? "s" : ""} will be created
+                      </span>
+                      <div className="overflow-x-auto">
+                        <table className="text-[10px] border-collapse">
+                          <thead>
+                            <tr>
+                              <th className="p-1.5 text-zinc-500 font-black text-left pr-4">Date \ Time</th>
+                              {bulkForm.times.filter(t => t.trim()).map((t, i) => (
+                                <th key={i} className="p-1.5 text-amber-400 font-black">{t}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {previewDates.slice(0, 14).map((d) => (
+                              <tr key={d}>
+                                <td className="p-1.5 text-zinc-400 font-bold pr-4 whitespace-nowrap">
+                                  {new Date(d + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short", weekday: "short" })}
+                                </td>
+                                {bulkForm.times.filter(t => t.trim()).map((t, i) => (
+                                  <td key={i} className="p-1.5 text-center">
+                                    <span className="inline-block w-4 h-4 rounded-full bg-rose-600/30 border border-rose-600/50" title={`${d} ${t}`} />
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                            {previewDates.length > 14 && (
+                              <tr><td colSpan={bulkForm.times.length + 1} className="p-1.5 text-zinc-600 italic">…and {previewDates.length - 14} more dates</td></tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bulk result summary */}
+                  {bulkResult && (
+                    <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-2">
+                      <span className="text-[10px] font-black text-emerald-400 uppercase block">✅ Bulk Result</span>
+                      <div className="flex gap-4 text-xs font-bold">
+                        <span className="text-emerald-400">✓ {bulkResult.created?.length || 0} created</span>
+                        <span className="text-amber-400">⊘ {bulkResult.skipped?.length || 0} skipped (duplicates)</span>
+                        <span className="text-rose-400">✗ {bulkResult.errors?.length || 0} errors</span>
+                      </div>
+                      {bulkResult.skipped?.length > 0 && (
+                        <div className="text-[10px] text-zinc-500">{bulkResult.skipped.join(" · ")}</div>
+                      )}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={actionLoading || previewDates.length === 0 || bulkForm.times.filter(t => t.trim()).length === 0}
+                    className="w-full py-3 mt-2 bg-rose-600 hover:bg-rose-500 text-white font-black uppercase rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-rose-600/20"
+                  >
+                    {actionLoading
+                      ? `Creating shows...`
+                      : `⚡ Create ${totalShows} Show${totalShows !== 1 ? "s" : ""}`
+                    }
+                  </button>
+                </form>
+              );
+            })()}
           </div>
         </div>
       )}
