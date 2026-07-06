@@ -231,6 +231,94 @@ export default function MovieDetailPage() {
                 </p>
               </div>
 
+              {/* Cast Section */}
+              {movie.cast && movie.cast.length > 0 && (
+                <div className="bg-zinc-900/30 border border-zinc-850 p-6 rounded-3xl backdrop-blur-sm space-y-4">
+                  <h3 className="text-base font-black tracking-wider uppercase text-zinc-100 flex items-center gap-2">
+                    <span className="w-1.5 h-5 bg-rose-600 rounded-full inline-block"></span>
+                    Cast
+                  </h3>
+                  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                    {movie.cast.map((actor, idx) => (
+                      <div
+                        key={idx}
+                        className="flex flex-col items-center text-center shrink-0 w-24 space-y-2"
+                      >
+                        <div className="w-16 h-16 rounded-full overflow-hidden border border-zinc-800 bg-zinc-950 flex items-center justify-center shadow-md">
+                          {actor.profilePic ? (
+                            <SecureImage
+                              src={actor.profilePic}
+                              alt={actor.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <svg
+                              className="w-8 h-8 text-zinc-600"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-bold text-zinc-200 line-clamp-1 leading-tight">
+                            {actor.name}
+                          </p>
+                          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider line-clamp-1 leading-tight">
+                            {actor.character}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Crew Section */}
+              {movie.crew && movie.crew.length > 0 && (
+                <div className="bg-zinc-900/30 border border-zinc-850 p-6 rounded-3xl backdrop-blur-sm space-y-4">
+                  <h3 className="text-base font-black tracking-wider uppercase text-zinc-100 flex items-center gap-2">
+                    <span className="w-1.5 h-5 bg-rose-600 rounded-full inline-block"></span>
+                    Crew
+                  </h3>
+                  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                    {movie.crew.map((member, idx) => (
+                      <div
+                        key={idx}
+                        className="flex flex-col items-center text-center shrink-0 w-24 space-y-2"
+                      >
+                        <div className="w-16 h-16 rounded-full overflow-hidden border border-zinc-800 bg-zinc-950 flex items-center justify-center shadow-md">
+                          {member.profilePic ? (
+                            <SecureImage
+                              src={member.profilePic}
+                              alt={member.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <svg
+                              className="w-8 h-8 text-zinc-600"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-bold text-zinc-200 line-clamp-1 leading-tight">
+                            {member.name}
+                          </p>
+                          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider line-clamp-1 leading-tight">
+                            {member.role}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Additional Details */}
               <div className="grid grid-cols-2 gap-4 p-5 rounded-3xl border border-zinc-900 bg-zinc-900/20 text-xs font-bold">
                 <div>

@@ -141,7 +141,7 @@ app.post("/", upload.single("banner"), async (req, res) => {
     const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
     if (tokenData.role !== "ADMIN") throw "Admin access only"
 
-    const { title, description, duration, genre, banner, trailerUrl, releaseDate, language, rating, censorRating } =
+    const { title, description, duration, genre, banner, trailerUrl, releaseDate, language, rating, censorRating, cast, crew } =
       req.body
 
     if (!title || !description || !duration || !language) throw "Title, description, duration and language are required"
@@ -158,6 +158,15 @@ app.post("/", upload.single("banner"), async (req, res) => {
       if (uploadResult) bannerUrl = uploadResult.imageUrl
     }
 
+    let parsedCast = []
+    let parsedCrew = []
+    try {
+      if (cast) parsedCast = typeof cast === "string" ? JSON.parse(cast) : cast
+      if (crew) parsedCrew = typeof crew === "string" ? JSON.parse(crew) : crew
+    } catch (e) {
+      console.error("Error parsing cast or crew in movie POST:", e)
+    }
+
     let newMovie = await new Movie({
       title,
       description,
@@ -169,6 +178,8 @@ app.post("/", upload.single("banner"), async (req, res) => {
       language: language || "Hindi",
       rating: rating || 0,
       censorRating: censorRating || "UA",
+      cast: parsedCast,
+      crew: parsedCrew,
     }).save()
 
     newMovie = utilities.cleanMongoDocument(newMovie)
@@ -189,7 +200,7 @@ app.patch("/:id", upload.single("banner"), async (req, res) => {
     const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
     if (tokenData.role !== "ADMIN") throw "Admin access only"
 
-    const { title, description, duration, genre, banner, trailerUrl, releaseDate, language, rating, censorRating } =
+    const { title, description, duration, genre, banner, trailerUrl, releaseDate, language, rating, censorRating, cast, crew } =
       req.body
 
     const updateData = {}
@@ -210,6 +221,22 @@ app.patch("/:id", upload.single("banner"), async (req, res) => {
 
     if (genre !== undefined) {
       updateData.genre = Array.isArray(genre) ? genre : [genre].filter(Boolean)
+    }
+
+    if (cast !== undefined) {
+      try {
+        updateData.cast = typeof cast === "string" ? JSON.parse(cast) : cast
+      } catch (e) {
+        console.error("Error parsing cast during movie PATCH:", e)
+      }
+    }
+
+    if (crew !== undefined) {
+      try {
+        updateData.crew = typeof crew === "string" ? JSON.parse(crew) : crew
+      } catch (e) {
+        console.error("Error parsing crew during movie PATCH:", e)
+      }
     }
 
     // Process uploads

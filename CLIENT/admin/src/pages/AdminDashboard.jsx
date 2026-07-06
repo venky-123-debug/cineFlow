@@ -57,6 +57,8 @@ export default function AdminDashboard() {
     releaseDate: "",
     language: "English",
     censorRating: "UA",
+    cast: [],
+    crew: [],
   });
 
   const [theatreForm, setTheatreForm] = useState({
@@ -96,6 +98,10 @@ export default function AdminDashboard() {
     dateMode: "range",
   });
   const [bulkResult, setBulkResult] = useState(null); // { created, skipped, errors }
+  const [newCast, setNewCast] = useState({ name: "", character: "", profilePic: "" });
+  const [newCrew, setNewCrew] = useState({ name: "", role: "", profilePic: "" });
+  const [uploadingCastPic, setUploadingCastPic] = useState(false);
+  const [uploadingCrewPic, setUploadingCrewPic] = useState(false);
 
   // Check auth - must be Admin
   useEffect(() => {
@@ -223,6 +229,8 @@ export default function AdminDashboard() {
       formData.append("censorRating", movieForm.censorRating);
       formData.append("trailerUrl", movieForm.trailerUrl);
       formData.append("releaseDate", movieForm.releaseDate);
+      formData.append("cast", JSON.stringify(movieForm.cast || []));
+      formData.append("crew", JSON.stringify(movieForm.crew || []));
 
       const genres = movieForm.genre
         .split(",")
@@ -427,6 +435,8 @@ export default function AdminDashboard() {
       releaseDate: movie.releaseDate ? movie.releaseDate.split("T")[0] : "",
       language: movie.language || "English",
       censorRating: movie.censorRating || "UA",
+      cast: movie.cast || [],
+      crew: movie.crew || [],
     });
     setCurrentEditId(movie.id);
     setShowModal("editMovie");
@@ -463,6 +473,90 @@ export default function AdminDashboard() {
     });
     setCurrentEditId(show.id);
     setShowModal("editShow");
+  };
+
+  const addCastMember = () => {
+    if (!newCast.name || !newCast.character) return;
+    setMovieForm((prev) => ({
+      ...prev,
+      cast: [...(prev.cast || []), newCast],
+    }));
+    setNewCast({ name: "", character: "", profilePic: "" });
+  };
+
+  const removeCastMember = (index) => {
+    setMovieForm((prev) => ({
+      ...prev,
+      cast: (prev.cast || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const addCrewMember = () => {
+    if (!newCrew.name || !newCrew.role) return;
+    setMovieForm((prev) => ({
+      ...prev,
+      crew: [...(prev.crew || []), newCrew],
+    }));
+    setNewCrew({ name: "", role: "", profilePic: "" });
+  };
+
+  const removeCrewMember = (index) => {
+    setMovieForm((prev) => ({
+      ...prev,
+      crew: (prev.crew || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleCastPicUpload = async (file) => {
+    if (!file) return;
+    setUploadingCastPic(true);
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await axios.post("/api/files/upload", formData, {
+        headers: {
+          "access-token": token,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (res.data.success) {
+        setNewCast((prev) => ({ ...prev, profilePic: res.data.data.imageUrl }));
+      } else {
+        alert(res.data.message || "Failed to upload cast picture.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload cast picture.");
+    } finally {
+      setUploadingCastPic(false);
+    }
+  };
+
+  const handleCrewPicUpload = async (file) => {
+    if (!file) return;
+    setUploadingCrewPic(true);
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await axios.post("/api/files/upload", formData, {
+        headers: {
+          "access-token": token,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (res.data.success) {
+        setNewCrew((prev) => ({ ...prev, profilePic: res.data.data.imageUrl }));
+      } else {
+        alert(res.data.message || "Failed to upload crew picture.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload crew picture.");
+    } finally {
+      setUploadingCrewPic(false);
+    }
   };
 
   return (
@@ -570,6 +664,8 @@ export default function AdminDashboard() {
                       releaseDate: "",
                       language: "English",
                       censorRating: "UA",
+                      cast: [],
+                      crew: [],
                     });
                     setShowModal("addMovie");
                   }}
@@ -1338,6 +1434,158 @@ export default function AdminDashboard() {
                     placeholder="e.g. https://youtube.com/..."
                     className="w-full p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-600"
                   />
+                </div>
+
+                {/* Cast Section */}
+                <div className="border-t border-zinc-800/80 pt-4 mt-4">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-rose-500 mb-2">
+                    Cast Members
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    <input
+                      type="text"
+                      placeholder="Actor Name"
+                      value={newCast.name}
+                      onChange={(e) => setNewCast({ ...newCast, name: e.target.value })}
+                      className="p-2 rounded bg-zinc-950 border border-zinc-800 text-[11px] text-white focus:outline-none focus:border-rose-600 w-full"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Character Name"
+                      value={newCast.character}
+                      onChange={(e) => setNewCast({ ...newCast, character: e.target.value })}
+                      className="p-2 rounded bg-zinc-950 border border-zinc-800 text-[11px] text-white focus:outline-none focus:border-rose-600 w-full"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 items-center mb-2">
+                    <div className="col-span-2">
+                      <label className="block text-[8px] font-bold text-gray-500 uppercase mb-0.5">
+                        Upload Profile Pic
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleCastPicUpload(e.target.files[0])}
+                        className="w-full text-[10px] text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-rose-600/10 file:text-rose-500 hover:file:bg-rose-600/20 cursor-pointer border border-zinc-800 p-1 bg-zinc-950 rounded"
+                      />
+                    </div>
+                    <div className="h-12 w-12 rounded-full border border-zinc-800 bg-zinc-950 overflow-hidden flex items-center justify-center self-end">
+                      {uploadingCastPic ? (
+                        <span className="text-[8px] text-rose-500 animate-pulse font-bold">Uploading...</span>
+                      ) : newCast.profilePic ? (
+                        <SecureImage src={newCast.profilePic} alt="Preview" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-[9px] text-zinc-650 font-bold uppercase">No Pic</span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addCastMember}
+                    className="px-3 py-1.5 bg-rose-600/10 text-rose-500 hover:bg-rose-600/20 border border-rose-500/20 text-[10px] font-black uppercase rounded-lg w-full mb-3"
+                  >
+                    + Add Actor
+                  </button>
+
+                  {/* Cast List */}
+                  {movieForm.cast && movieForm.cast.length > 0 && (
+                    <div className="max-h-32 overflow-y-auto space-y-1 bg-zinc-950 p-2 rounded-lg border border-zinc-800 mb-4">
+                      {movieForm.cast.map((actor, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-[10px] text-gray-400 py-1 border-b border-zinc-900/60 last:border-0">
+                          <div className="flex items-center gap-2">
+                            {actor.profilePic && (
+                              <SecureImage src={actor.profilePic} alt="" className="w-6 h-6 rounded-full object-cover border border-zinc-800" />
+                            )}
+                            <span className="font-bold text-white">{actor.name}</span>
+                          </div>
+                          <span>as {actor.character}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeCastMember(idx)}
+                            className="text-rose-500 hover:text-rose-400 font-bold"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Crew Section */}
+                <div className="border-t border-zinc-800/80 pt-4 mt-4">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-rose-500 mb-2">
+                    Crew Members
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    <input
+                      type="text"
+                      placeholder="Crew Name"
+                      value={newCrew.name}
+                      onChange={(e) => setNewCrew({ ...newCrew, name: e.target.value })}
+                      className="p-2 rounded bg-zinc-950 border border-zinc-800 text-[11px] text-white focus:outline-none focus:border-rose-600 w-full"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Role (e.g. Director)"
+                      value={newCrew.role}
+                      onChange={(e) => setNewCrew({ ...newCrew, role: e.target.value })}
+                      className="p-2 rounded bg-zinc-950 border border-zinc-800 text-[11px] text-white focus:outline-none focus:border-rose-600 w-full"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 items-center mb-2">
+                    <div className="col-span-2">
+                      <label className="block text-[8px] font-bold text-gray-500 uppercase mb-0.5">
+                        Upload Profile Pic
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleCrewPicUpload(e.target.files[0])}
+                        className="w-full text-[10px] text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-rose-600/10 file:text-rose-500 hover:file:bg-rose-600/20 cursor-pointer border border-zinc-800 p-1 bg-zinc-950 rounded"
+                      />
+                    </div>
+                    <div className="h-12 w-12 rounded-full border border-zinc-800 bg-zinc-950 overflow-hidden flex items-center justify-center self-end">
+                      {uploadingCrewPic ? (
+                        <span className="text-[8px] text-rose-500 animate-pulse font-bold">Uploading...</span>
+                      ) : newCrew.profilePic ? (
+                        <SecureImage src={newCrew.profilePic} alt="Preview" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-[9px] text-zinc-650 font-bold uppercase">No Pic</span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addCrewMember}
+                    className="px-3 py-1.5 bg-rose-600/10 text-rose-500 hover:bg-rose-600/20 border border-rose-500/20 text-[10px] font-black uppercase rounded-lg w-full mb-3"
+                  >
+                    + Add Crew Member
+                  </button>
+
+                  {/* Crew List */}
+                  {movieForm.crew && movieForm.crew.length > 0 && (
+                    <div className="max-h-32 overflow-y-auto space-y-1 bg-zinc-950 p-2 rounded-lg border border-zinc-800 mb-2">
+                      {movieForm.crew.map((member, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-[10px] text-gray-400 py-1 border-b border-zinc-900/60 last:border-0">
+                          <div className="flex items-center gap-2">
+                            {member.profilePic && (
+                              <SecureImage src={member.profilePic} alt="" className="w-6 h-6 rounded-full object-cover border border-zinc-800" />
+                            )}
+                            <span className="font-bold text-white">{member.name}</span>
+                          </div>
+                          <span>— {member.role}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeCrewMember(idx)}
+                            className="text-rose-500 hover:text-rose-400 font-bold"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <button

@@ -11,6 +11,20 @@ const movieSchema = new mongoose.Schema({
   releaseDate: { type: Date },
   language: { type: String, default: "English" },
   censorRating: { type: String, enum: ["U", "UA", "A", "S"], default: "UA" },
+  cast: [
+    {
+      name: { type: String, required: true },
+      character: { type: String, required: true },
+      profilePic: { type: String }
+    }
+  ],
+  crew: [
+    {
+      name: { type: String, required: true },
+      role: { type: String, required: true },
+      profilePic: { type: String }
+    }
+  ],
   createdAt: { type: Date, default: Date.now },
 })
 

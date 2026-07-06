@@ -3,11 +3,53 @@ const fs = require("fs").promises
 const app = express.Router()
 const errorhandler = require("../scripts/error")
 const utilities = require("../scripts/utils")
+const upload = require("../middleware/upload")
+const crypto = require("crypto")
 
 let uploadDir = process.env.UPLOADS_PATH || "UPLOADS/"
 if (!uploadDir.endsWith("/") && !uploadDir.endsWith("\\")) {
   uploadDir += "/"
 }
+
+// POST /upload - upload a single file (image)
+app.post("/upload", upload.single("file"), async (req, res) => {
+  let response = { success: false }
+  try {
+    if (!req.headers["access-token"]) throw "No token"
+    const tokenData = await utilities.verifyToken(req.headers["access-token"], process.env.JWT_SECRET)
+    if (tokenData.role !== "ADMIN") throw "Admin access only"
+
+    if (!req.file) throw "No file provided"
+
+    // Calculate SHA-256 hash of the buffer
+    const fileHash = crypto.createHash("sha256").update(req.file.buffer).digest("hex")
+
+    // Ensure the uploads directory exists
+    await fs.mkdir(uploadDir, { recursive: true })
+
+    const filePath = `${uploadDir}${fileHash}`
+
+    try {
+      // Check if the file already exists
+      await fs.access(filePath)
+      console.log(`File already exists with hash ${fileHash}. Reusing same image.`)
+    } catch (err) {
+      // File does not exist, write the buffer to disk
+      await fs.writeFile(filePath, req.file.buffer)
+      console.log(`Saved new file with hash ${fileHash}`)
+    }
+
+    response.success = true
+    response.data = {
+      fileHash,
+      imageUrl: `/api/files/${fileHash}`,
+    }
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
 
 async function findMovieFile(fileHash) {
   const entries = await fs.readdir(uploadDir)
