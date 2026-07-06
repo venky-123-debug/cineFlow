@@ -42,142 +42,68 @@ export default function CinemaBackground() {
   return (
     <div
       aria-hidden="true"
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 0,
-        overflow: "hidden",
-        pointerEvents: "none",
-      }}
+      className="fixed inset-0 -z-10 overflow-hidden pointer-events-none"
     >
       {/* Base image */}
       <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: "url(/cinema_grid_bg.png)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          opacity: 0.07,
-          transform: "scale(1.05)",
-          filter: "saturate(1.2) brightness(0.8)",
-        }}
+        className="absolute inset-0 bg-[url(/cinema_grid_bg.png)] bg-cover bg-center bg-no-repeat opacity-[0.07] scale-[1.05] saturate-[1.2] brightness-[0.8]"
       />
 
       {/* Dark overlay */}
       <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(135deg, rgba(9,9,11,0.97) 0%, rgba(9,9,11,0.90) 50%, rgba(9,9,11,0.96) 100%)",
-        }}
+        className="absolute inset-0 bg-gradient-to-br from-zinc-950/97 via-zinc-950/90 to-zinc-950/96"
       />
 
       {/* Mosaic grid cells */}
       {gridCells.map((cell, i) => (
         <div
           key={i}
+          className="absolute bg-[url(/cinema_grid_bg.png)] bg-cover opacity-0 rounded-[4px] saturate-[1.1] sepia-[0.15]"
           style={{
-            position: "absolute",
             top: cell.top,
             left: cell.left,
             width: cell.w,
             height: cell.h,
-            backgroundImage: "url(/cinema_grid_bg.png)",
-            backgroundSize: "cover",
             backgroundPosition: `${(i * 19) % 100}% ${(i * 27) % 100}%`,
-            opacity: 0,
             border: `1px solid ${accentColors[i]}`,
-            borderRadius: "4px",
             animation: `adminGridCell 9s ease-in-out infinite`,
             animationDelay: cell.delay,
-            filter: "saturate(1.1) sepia(0.15)",
           }}
         />
       ))}
 
       {/* Horizontal film-strip accent lines */}
       <div
-        style={{
-          position: "absolute",
-          top: "20%",
-          left: 0,
-          right: 0,
-          height: "1px",
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(245,158,11,0.06) 30%, rgba(245,158,11,0.12) 50%, rgba(245,158,11,0.06) 70%, transparent 100%)",
-        }}
+        className="absolute top-[20%] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/12 to-transparent"
       />
       <div
-        style={{
-          position: "absolute",
-          top: "65%",
-          left: 0,
-          right: 0,
-          height: "1px",
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(99,102,241,0.05) 30%, rgba(99,102,241,0.09) 50%, rgba(99,102,241,0.05) 70%, transparent 100%)",
-        }}
+        className="absolute top-[65%] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/9 to-transparent"
       />
 
       {/* Vertical separator lines */}
       {[20, 40, 60, 80].map((pos, i) => (
         <div
           key={i}
+          className="absolute top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-white/3 to-transparent"
           style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
             left: `${pos}%`,
-            width: "1px",
-            background:
-              "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.018) 35%, rgba(255,255,255,0.035) 50%, rgba(255,255,255,0.018) 65%, transparent 100%)",
           }}
         />
       ))}
 
       {/* Top-center amber spotlight projector beam */}
       <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "800px",
-          height: "440px",
-          background:
-            "radial-gradient(ellipse at top, rgba(245,158,11,0.08) 0%, rgba(245,158,11,0.03) 35%, transparent 70%)",
-          filter: "blur(24px)",
-        }}
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[440px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/8 via-amber-500/3 to-transparent blur-[24px]"
       />
 
       {/* Left edge indigo ambient glow */}
       <div
-        style={{
-          position: "absolute",
-          top: "20%",
-          left: 0,
-          width: "300px",
-          height: "400px",
-          background:
-            "radial-gradient(ellipse at left, rgba(99,102,241,0.06) 0%, transparent 70%)",
-          filter: "blur(30px)",
-        }}
+        className="absolute top-[20%] left-0 w-[300px] h-[400px] bg-[radial-gradient(ellipse_at_left,_var(--tw-gradient-stops))] from-indigo-500/6 to-transparent blur-[30px]"
       />
 
       {/* Bottom fade */}
       <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: "250px",
-          background:
-            "linear-gradient(to top, rgba(9,9,11,1) 0%, transparent 100%)",
-        }}
+        className="absolute bottom-0 left-0 right-0 h-[250px] bg-gradient-to-t from-zinc-950 to-transparent"
       />
 
       <style>{`

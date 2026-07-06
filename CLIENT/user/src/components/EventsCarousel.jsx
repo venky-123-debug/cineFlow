@@ -440,7 +440,7 @@ export default function EventsCarousel() {
   };
 
   return (
-    <section style={{ margin: "0 0 40px 0" }}>
+    <section style={{ margin: "0 0 64px 0" }}>
       {/* Section heading */}
       <div
         style={{
@@ -520,7 +520,7 @@ export default function EventsCarousel() {
 
       {/* Carousel viewport */}
       <div
-        style={{ position: "relative" }}
+        className="relative overflow-hidden py-6"
         onMouseEnter={pauseAutoPlay}
         onMouseLeave={resumeAutoPlay}
         onMouseDown={handleMouseDown}
@@ -534,7 +534,7 @@ export default function EventsCarousel() {
             display: "grid",
             gridTemplateColumns: "1fr 2fr 1fr",
             gap: "16px",
-            height: "340px",
+            height: "auto",
             userSelect: "none",
           }}
         >

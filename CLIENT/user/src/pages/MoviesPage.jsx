@@ -84,9 +84,11 @@ export default function MoviesPage() {
           </div>
         </div>
 
-        <EventsCarousel />
+        <div className="mb-12">
+          <EventsCarousel />
+        </div>
 
-        <div className="flex justify-between items-center mb-8 border-b border-zinc-900 pb-4">
+        <div className="mt-12 flex justify-between items-center mb-8 border-b border-zinc-900 pb-4">
           <h3 className="text-lg md:text-xl font-black tracking-wider uppercase text-zinc-100 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-rose-600 rounded-full inline-block"></span>
             Recommended Movies

@@ -469,7 +469,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen text-white flex flex-col relative overflow-hidden">
       <CinemaBackground />
 
-      <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", flex: 1 }}>
+      <div className="relative z-10 flex flex-col flex-1">
       <Header />
 
       <div className="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto px-6 py-8 gap-8">
