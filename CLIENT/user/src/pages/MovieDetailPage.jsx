@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import SecureImage from "../components/SecureImage";
+import CinemaBackground from "../components/CinemaBackground";
 
 export default function MovieDetailPage() {
   const { movieId } = useParams();
@@ -94,7 +95,9 @@ export default function MovieDetailPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <span className="text-zinc-500 mt-4 text-xs font-bold uppercase tracking-wider">Loading details...</span>
+          <span className="text-zinc-500 mt-4 text-xs font-bold uppercase tracking-wider">
+            Loading details...
+          </span>
         </div>
       </div>
     );
@@ -102,9 +105,12 @@ export default function MovieDetailPage() {
 
   return (
     <div className="min-h-screen text-white flex flex-col relative overflow-hidden">
+      {/* Cinema mosaic background */}
+      <CinemaBackground />
+
       {/* Top spotlight projection overlay */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-rose-500/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10"></div>
-      
+
       <Header selectedCity={selectedCity} onCityChange={handleCityChange} />
 
       {movie && (
@@ -125,9 +131,7 @@ export default function MovieDetailPage() {
             {/* Main content layer */}
             <div className="max-w-7xl w-full mx-auto px-6 py-8 relative z-20 flex flex-col md:flex-row gap-8 items-center md:items-end">
               {/* Poster card */}
-              <div
-                className="w-[180px] md:w-[240px] aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-950 -mb-16 md:-mb-24 z-30 self-center md:self-auto"
-              >
+              <div className="w-[180px] md:w-[240px] aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-950 -mb-16 md:-mb-24 z-30 self-center md:self-auto">
                 <SecureImage
                   src={movie.banner || "/placeholder-poster.jpg"}
                   alt={movie.title}
@@ -230,16 +234,23 @@ export default function MovieDetailPage() {
               {/* Additional Details */}
               <div className="grid grid-cols-2 gap-4 p-5 rounded-3xl border border-zinc-900 bg-zinc-900/20 text-xs font-bold">
                 <div>
-                  <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">Censor Rating</span>
+                  <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                    Censor Rating
+                  </span>
                   <span className="text-zinc-200 mt-1 block font-black uppercase text-sm">
                     {movie.censorRating || "UA"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">Release Date</span>
+                  <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                    Release Date
+                  </span>
                   <span className="text-zinc-200 mt-1 block font-black text-sm">
                     {movie.releaseDate
-                      ? new Date(movie.releaseDate).toLocaleDateString(undefined, { dateStyle: 'medium' })
+                      ? new Date(movie.releaseDate).toLocaleDateString(
+                          undefined,
+                          { dateStyle: "medium" },
+                        )
                       : "N/A"}
                   </span>
                 </div>
@@ -261,7 +272,7 @@ export default function MovieDetailPage() {
                     <button
                       key={tab.isoString}
                       onClick={() => setSelectedDate(tab.isoString)}
-                      className={`flex-shrink-0 flex flex-col items-center px-4.5 py-3 rounded-2xl border transition-all duration-300 min-w-[75px] ${
+                      className={`shrink-0 flex flex-col items-center px-4.5 py-3 rounded-2xl border transition-all duration-300 min-w-[75px] ${
                         isActive
                           ? "bg-rose-600 border-rose-600 text-white shadow-lg shadow-rose-600/20"
                           : "bg-zinc-900/60 border-zinc-850 text-zinc-400 hover:text-white hover:border-zinc-700"

@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import Header from "../components/Header";
 import SecureImage from "../components/SecureImage";
+import CinemaBackground from "../components/CinemaBackground";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -392,7 +393,10 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
+    <div className="min-h-screen text-white flex flex-col relative overflow-hidden">
+      <CinemaBackground />
+
+      <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", flex: 1 }}>
       <Header />
 
       <div className="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto px-6 py-8 gap-8">
@@ -1527,6 +1531,8 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
+

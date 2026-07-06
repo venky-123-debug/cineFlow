@@ -6,6 +6,7 @@ import MoviesPage from './pages/MoviesPage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import SeatPage from './pages/SeatPage';
 import BookingsPage from './pages/BookingsPage';
+import EventsPage from './pages/EventsPage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/movie/:movieId" element={<ProtectedRoute><MovieDetailPage /></ProtectedRoute>} />
       <Route path="/seat/:showId" element={<ProtectedRoute><SeatPage /></ProtectedRoute>} />
       <Route path="/my-bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />
+      <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

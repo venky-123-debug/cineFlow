@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import CinemaBackground from "../components/CinemaBackground";
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -86,6 +87,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center text-white relative overflow-hidden px-4">
+      {/* Cinema mosaic background */}
+      <CinemaBackground />
+
       {/* Cinematic light projection glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-rose-500/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10 animate-pulse"></div>
       <div className="absolute bottom-[-100px] right-[-50px] w-96 h-96 bg-rose-500/5 rounded-full blur-3xl -z-10"></div>
@@ -94,9 +98,18 @@ export default function LoginPage() {
       <div className="w-full max-w-md p-8 rounded-3xl bg-zinc-900/40 border border-zinc-850 backdrop-blur-md shadow-2xl relative z-10 transition-all duration-300">
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black bg-gradient-to-r from-rose-500 via-red-500 to-pink-600 bg-clip-text text-transparent tracking-widest flex items-center justify-center gap-2 drop-shadow-[0_2px_10px_rgba(244,63,94,0.15)] uppercase">
-            <svg className="w-7 h-7 text-rose-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm3 2h6v4H7V5zm8 8v2h-1v-2h1zm-2-2H9v4h4v-4zm2 0h1v2h-1v-2zm-3-6h2v2h-2V5zM7 11H3v4h4v-4zm-4-2h2v2H3V9zm2-4H3v2h2V5zm10 6h1v2h-1v-2zm1-2h-1V7h1v2z" clipRule="evenodd"></path>
+          <h1 className="text-3xl font-black bg-linear-to-r from-rose-500 via-red-500 to-pink-600 bg-clip-text text-transparent tracking-widest flex items-center justify-center gap-2 drop-shadow-[0_2px_10px_rgba(244,63,94,0.15)] uppercase">
+            <svg
+              className="w-7 h-7 text-rose-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm3 2h6v4H7V5zm8 8v2h-1v-2h1zm-2-2H9v4h4v-4zm2 0h1v2h-1v-2zm-3-6h2v2h-2V5zM7 11H3v4h4v-4zm-4-2h2v2H3V9zm2-4H3v2h2V5zm10 6h1v2h-1v-2zm1-2h-1V7h1v2z"
+                clipRule="evenodd"
+              ></path>
             </svg>
             CINEFLOW ADMIN
           </h1>

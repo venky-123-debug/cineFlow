@@ -68,7 +68,7 @@ export default function Header({
       <div className="flex items-center justify-between md:justify-start gap-8">
         <Link
           to="/"
-          className="text-2xl font-black bg-gradient-to-r from-rose-500 via-red-500 to-pink-600 bg-clip-text text-transparent tracking-widest hover:opacity-95 transition-all flex items-center gap-2 drop-shadow-[0_2px_10px_rgba(244,63,94,0.15)]"
+          className="text-2xl font-black bg-linear-to-r from-rose-500 via-red-500 to-pink-600 bg-clip-text text-transparent tracking-widest hover:opacity-95 transition-all flex items-center gap-2 drop-shadow-[0_2px_10px_rgba(244,63,94,0.15)]"
         >
           <svg
             className="w-6 h-6 text-rose-500"
@@ -157,6 +157,26 @@ export default function Header({
       {/* Nav Links & Actions */}
       <div className="flex items-center justify-between md:justify-end gap-6 text-xs font-semibold">
         <Link
+          to="/events"
+          className="text-zinc-300 hover:text-rose-500 transition-all duration-300 flex items-center gap-2 group"
+        >
+          <svg
+            className="w-4 h-4 text-zinc-400 group-hover:text-rose-500 transition-colors"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          Events
+        </Link>
+        <Link
           to="/my-bookings"
           className="text-zinc-300 hover:text-rose-500 transition-all duration-300 flex items-center gap-2 group"
         >
@@ -177,7 +197,7 @@ export default function Header({
           My Bookings
         </Link>
 
-        <div className="h-5 w-[1px] bg-zinc-800 hidden md:block"></div>
+        <div className="h-5 w-px bg-zinc-800 hidden md:block"></div>
 
         {/* User profile & Logout */}
         <div className="flex items-center gap-3">
