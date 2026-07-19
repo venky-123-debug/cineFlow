@@ -480,4 +480,83 @@ async function sendTicketEmail({ email, movieTitle, theatreName, seats, showTime
   }
 }
 
-module.exports = { sendTicketEmail }
+async function sendOtpEmail({ email, otp }) {
+  try {
+    const emailHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Reset Your Password</title>
+</head>
+<body style="margin:0;padding:0;background:#06030d;font-family:'Segoe UI',Arial,sans-serif;color:#ffffff;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(160deg,#06030d 0%,#0e0518 100%);">
+  <tr><td align="center" style="padding:40px 16px;">
+  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+    <tr><td align="center" style="padding-bottom:32px;">
+      <div style="font-size:28px;font-weight:900;letter-spacing:6px;color:#d4af37;">CINEFLOW</div>
+      <div style="font-size:10px;color:#5a3060;letter-spacing:4px;margin-top:5px;">PASSWORD RESET SERVICE</div>
+    </td></tr>
+    <tr><td>
+      <div style="background:#0d0515;border:1px solid #1e0d30;border-radius:16px;padding:32px;margin-bottom:24px;text-align:center;">
+        <h2 style="color:#d4af37;margin-bottom:16px;">Reset Password Verification</h2>
+        <p style="color:#8b9cc8;font-size:14px;line-height:1.6;margin-bottom:24px;">
+          You requested a password reset. Use the following verification code (OTP) to reset your password. This OTP is valid for 10 minutes.
+        </p>
+        <div style="display:inline-block;background:rgba(180,23,58,0.12);border:1px solid #B8173A;border-radius:12px;padding:12px 36px;font-size:32px;font-weight:900;letter-spacing:6px;color:#d4af37;margin-bottom:24px;">
+          ${otp}
+        </div>
+        <p style="color:#5a3060;font-size:12px;margin:0;">
+          If you did not request a password reset, please ignore this email.
+        </p>
+      </div>
+    </td></tr>
+    <tr><td align="center">
+      <div style="font-size:10px;color:#1e0d28;letter-spacing:2px;">
+        © ${new Date().getFullYear()} CINEFLOW · Password Security Reset
+      </div>
+    </td></tr>
+  </table>
+  </td></tr>
+</table>
+</body>
+</html>`
+
+    let transporter
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST || "smtp.gmail.com",
+        port: parseInt(process.env.EMAIL_PORT || "587"),
+        secure: process.env.EMAIL_PORT === "465",
+        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+      })
+    } else {
+      console.log("No SMTP credentials — creating Ethereal test account...")
+      const testAccount = await nodemailer.createTestAccount()
+      transporter = nodemailer.createTransport({
+        host: "smtp.ethereal.email", port: 587, secure: false,
+        auth: { user: testAccount.user, pass: testAccount.pass },
+      })
+    }
+
+    const info = await transporter.sendMail({
+      from: `"CineFlow Security" <${process.env.EMAIL_USER || "no-reply@cineflow.com"}>`,
+      to: email,
+      subject: `🔑 CineFlow Password Reset OTP`,
+      html: emailHtml,
+    })
+    console.log(`✓ OTP Email sent → ${email} | MsgID: ${info.messageId}`)
+
+    const previewUrl = nodemailer.getTestMessageUrl(info)
+    if (previewUrl) {
+      console.log(`Ethereal preview: ${previewUrl}`)
+      return { success: true, previewUrl }
+    }
+    return { success: true }
+  } catch (error) {
+    console.error("✗ Failed to send OTP email:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+module.exports = { sendTicketEmail, sendOtpEmail }

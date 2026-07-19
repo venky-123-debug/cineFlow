@@ -199,4 +199,72 @@ app.post("/google", async (req, res) => {
   }
 })
 
+// SEND OTP FOR PASSWORD RESET
+app.post("/forgot-password", async (req, res) => {
+  let response = { success: false }
+  try {
+    const { email } = req.body
+    if (!email) throw "Email is required"
+    if (!utilities.emailAddressPattern.test(email)) throw "Invalid email address"
+
+    // Verify user or admin exists with this email
+    const userExists = await User.exists({ email })
+    if (!userExists) throw "User with this email does not exist"
+
+    // Generate 6-digit numeric OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+
+    // Store in Redis with a 10-minute expiry (600 seconds)
+    const redisClient = require("../config/redis")
+    await redisClient.setEx(`otp:${email}`, 600, otp)
+
+    // Send email with nodemailer
+    const { sendOtpEmail } = require("../scripts/email")
+    const emailResult = await sendOtpEmail({ email, otp })
+
+    response.success = true
+    response.message = "OTP sent to email successfully"
+    if (emailResult.previewUrl) {
+      response.previewUrl = emailResult.previewUrl
+    }
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
+// VERIFY OTP AND RESET PASSWORD (FOR BOTH USER AND ADMIN)
+app.post("/reset-password", async (req, res) => {
+  let response = { success: false }
+  try {
+    const { email, otp, newPassword } = req.body
+    if (!email || !otp || !newPassword) throw "Email, OTP, and newPassword are required"
+
+    const redisClient = require("../config/redis")
+    const storedOtp = await redisClient.get(`otp:${email}`)
+
+    if (!storedOtp || storedOtp !== otp) {
+      throw "Invalid or expired OTP"
+    }
+
+    // Hash the new password with SHA256 as used throughout the authentication system
+    const hashedPassword = SHA256(newPassword).toString()
+
+    // Update all matching user/admin profiles with this email
+    const result = await User.updateMany({ email }, { $set: { password: hashedPassword } })
+    if (result.matchedCount === 0) throw "User not found"
+
+    // Delete OTP from Redis
+    await redisClient.del(`otp:${email}`)
+
+    response.success = true
+    response.message = "Password reset successfully. You can now login with your new password."
+  } catch (error) {
+    response = await errorhandler(error, response)
+  } finally {
+    res.json(response)
+  }
+})
+
 module.exports = app
