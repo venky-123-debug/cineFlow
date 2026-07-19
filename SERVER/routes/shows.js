@@ -149,14 +149,20 @@ app.get("/:id/seats", async (req, res) => {
       show.seats = utilities.generateSeatMatrix(show.totalRows || 12, show.seatsPerRow || 15)
     }
 
-    // Get active Redis locks for this show
+    // Get active Redis locks for this show using Hash HGETALL (O(K) where K is number of locks)
     const redisClient = require("../config/redis")
-    const lockKeys = await redisClient.keys(`lock:show:${id}:seat:*`)
+    const locks = (await redisClient.hGetAll(`show:${id}:locks`)) || {}
     const lockedSeats = new Set()
-    for (const key of lockKeys) {
-      const parts = key.split(":")
-      const seatNum = parts[parts.length - 1]
-      lockedSeats.add(seatNum)
+    const now = Date.now()
+
+    for (const [seatNum, lockData] of Object.entries(locks)) {
+      if (lockData) {
+        const [lockedBy, expiresAtStr] = lockData.split(":")
+        const expiresAt = parseInt(expiresAtStr, 10)
+        if (expiresAt > now) {
+          lockedSeats.add(seatNum)
+        }
+      }
     }
 
     // Apply locks dynamically to the seats returned
@@ -242,21 +248,35 @@ app.post("/:id/lock", async (req, res) => {
     }
 
     const redisClient = require("../config/redis")
+    const hashKey = `show:${id}:locks`
+    const now = Date.now()
+    const lockDuration = Number(process.env.SEAT_LOCK_DURATION || 600) * 1000 // In milliseconds
+    const newExpiresAt = now + lockDuration
 
-    // Check Redis locks
-    for (const seat of seats) {
-      const lockKey = `lock:show:${id}:seat:${seat}`
-      const lockedBy = await redisClient.get(lockKey)
-      if (lockedBy && lockedBy !== tokenData.id) {
-        throw `Seat ${seat} is currently locked by another user`
+    await redisClient.executeIsolated(async (isolatedClient) => {
+      await isolatedClient.watch(hashKey)
+
+      const locks = (await isolatedClient.hGetAll(hashKey)) || {}
+      for (const seat of seats) {
+        const lockData = locks[seat]
+        if (lockData) {
+          const [lockedBy, expiresAtStr] = lockData.split(":")
+          const expiresAt = parseInt(expiresAtStr, 10)
+          if (expiresAt > now && lockedBy !== tokenData.id) {
+            throw `Seat ${seat} is currently locked by another user`
+          }
+        }
       }
-    }
 
-    // Acquire Redis locks with 10 minutes expiry (600 seconds)
-    for (const seat of seats) {
-      const lockKey = `lock:show:${id}:seat:${seat}`
-      await redisClient.setEx(lockKey, Number(process.env.SEAT_LOCK_DURATION || 600), tokenData.id) // Default to 10 minutes if not set
-    }
+      const multi = isolatedClient.multi()
+      for (const seat of seats) {
+        multi.hSet(hashKey, seat, `${tokenData.id}:${newExpiresAt}`)
+      }
+      const results = await multi.exec()
+      if (results === null) {
+        throw "Concurrency conflict: Someone else updated seat locks. Please try again."
+      }
+    })
 
     response.success = true
     response.message = "Seats locked successfully for 10 minutes"

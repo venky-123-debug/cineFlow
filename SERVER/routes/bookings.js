@@ -38,13 +38,22 @@ app.post("/", async (req, res) => {
       }
     }
 
-    // Verify user holds the Redis locks for these seats
+    // Verify user holds the Redis locks for these seats in the Hash
     const redisClient = require("../config/redis")
+    const hashKey = `show:${showId}:locks`
+    const locks = (await redisClient.hGetAll(hashKey)) || {}
+    const now = Date.now()
+
     for (const seat of seats) {
-      const lockKey = `lock:show:${showId}:seat:${seat}`
-      const lockedBy = await redisClient.get(lockKey)
-      if (lockedBy && lockedBy !== tokenData.id) {
-        throw `Seat ${seat} is locked by another user`
+      const lockData = locks[seat]
+      if (lockData) {
+        const [lockedBy, expiresAtStr] = lockData.split(":")
+        const expiresAt = parseInt(expiresAtStr, 10)
+        if (expiresAt < now || lockedBy !== tokenData.id) {
+          throw `Seat ${seat} lock has expired or is locked by another user`
+        }
+      } else {
+        throw `Seat ${seat} is not locked by you`
       }
     }
 
@@ -61,6 +70,16 @@ app.post("/", async (req, res) => {
     }
 
     const order = await razorpay.orders.create(options)
+
+    // Save PENDING booking in MongoDB ledger immediately to resolve client-webhook race condition
+    await new Booking({
+      userId: tokenData.id,
+      showId,
+      seats,
+      totalAmount,
+      orderId: order.id,
+      status: "PENDING",
+    }).save()
 
     response.success = true
     response.data = {
@@ -101,17 +120,23 @@ app.post("/verify-payment", async (req, res) => {
 
     const ticketId = `TICKET_${Date.now()}`
 
-    // Create Booking with CONFIRM status (payment already verified)
-    const booking = await new Booking({
-      userId: tokenData.id,
-      showId,
-      seats,
-      totalAmount,
-      paymentId: razorpay_payment_id,
-      orderId: razorpay_order_id, // Store order ID for webhook reference
-      status: "CONFIRM",
-      ticketId,
-    }).save()
+    // Idempotent conditional transition: only transition status from PENDING to CONFIRM
+    const booking = await Booking.findOneAndUpdate(
+      { orderId: razorpay_order_id, status: "PENDING" },
+      { $set: { status: "CONFIRM", paymentId: razorpay_payment_id, ticketId } },
+      { new: true }
+    )
+
+    if (!booking) {
+      // If the webhook got here first, return the already processed confirmed booking
+      const existingConfirmed = await Booking.findOne({ orderId: razorpay_order_id, status: "CONFIRM" })
+      if (!existingConfirmed) {
+        throw "Booking not found or already processed"
+      }
+      response.success = true
+      response.data = utilities.cleanMongoDocument(existingConfirmed)
+      return
+    }
 
     // Ensure seat layout is initialized
     if (!show.seats || show.seats.length === 0) {
@@ -134,12 +159,9 @@ app.post("/verify-payment", async (req, res) => {
       }
     )
 
-    // Clear Redis seat locks
+    // Clear Redis seat locks from the Hash
     const redisClient = require("../config/redis")
-    for (const seat of seats) {
-      const key = `lock:show:${showId}:seat:${seat}`
-      await redisClient.del(key)
-    }
+    await redisClient.hDel(`show:${showId}:locks`, seats)
 
     // Send ticket email
     const user = await User.findById(tokenData.id).lean()
@@ -191,12 +213,13 @@ app.post("/webhook", async (req, res) => {
       const payment = event.payload.payment.entity
       const orderId = payment.order_id
       
-      const booking = await Booking.findOne({ orderId })
-      if (booking && booking.status !== "CONFIRM") {
-        booking.status = "CONFIRM"
-        booking.paymentId = payment.id
-        booking.ticketId = booking.ticketId || `TICKET_${Date.now()}`
-        await booking.save()
+      const ticketId = `TICKET_${Date.now()}`
+      const booking = await Booking.findOneAndUpdate(
+        { orderId, status: "PENDING" },
+        { $set: { status: "CONFIRM", paymentId: payment.id, ticketId } },
+        { new: true }
+      )
+      if (booking) {
 
         const show = await Show.findById(booking.showId)
         if (show) {
@@ -221,12 +244,9 @@ app.post("/webhook", async (req, res) => {
             }
           )
 
-          // Clear Redis seat locks
+          // Clear Redis seat locks from the Hash
           const redisClient = require("../config/redis")
-          for (const seat of booking.seats) {
-            const key = `lock:show:${booking.showId}:seat:${seat}`
-            await redisClient.del(key)
-          }
+          await redisClient.hDel(`show:${booking.showId}:locks`, booking.seats)
 
           // Send email
           const user = await User.findById(booking.userId).lean()

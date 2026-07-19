@@ -76,24 +76,26 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
   if (["payment.captured", "payment.authorized", "order.paid", "payment_link.paid"].includes(eventType)) {
     try {
       let booking = null
-      // Try to find by orderId first
+      const query = { status: "PENDING" }
       if (orderId) {
-        booking = await Booking.findOne({ orderId: orderId })
+        query.orderId = orderId
+      } else if (paymentEntity.id) {
+        query.paymentId = paymentEntity.id
+      } else if (paymentLinkId) {
+        query.paymentId = paymentLinkId
       }
-      // Fallback to paymentId (Razorpay payment ID)
-      if (!booking && paymentEntity.id) {
-        booking = await Booking.findOne({ paymentId: paymentEntity.id })
-      }
-      // Fallback to paymentLinkId
-      if (!booking && paymentLinkId) {
-        booking = await Booking.findOne({ paymentId: paymentLinkId })
+
+      if (query.orderId || query.paymentId) {
+        const ticketId = uuidv4()
+        booking = await Booking.findOneAndUpdate(
+          query,
+          { $set: { status: "CONFIRM", paymentId: paymentEntity.id || paymentLinkId, ticketId } },
+          { new: true }
+        )
       }
 
       if (booking) {
         console.log(`Webhook: Confirming booking ${booking._id} for payment ${orderId || paymentEntity.id}`)
-        booking.status = "CONFIRM"
-        booking.ticketId = booking.ticketId || uuidv4()
-        await booking.save()
 
         const show = await Show.findById(booking.showId)
         if (show) {
@@ -120,12 +122,9 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
           )
         }
 
-        // Clear Redis seat locks
+        // Clear Redis seat locks from the Hash
         const redisClient = require("./config/redis")
-        for (const seat of booking.seats) {
-          const key = `lock:show:${booking.showId}:seat:${seat}`
-          await redisClient.del(key)
-        }
+        await redisClient.hDel(`show:${booking.showId}:locks`, booking.seats)
 
         // Send email
         const User = require("./models/user")
