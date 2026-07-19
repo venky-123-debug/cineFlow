@@ -13,6 +13,58 @@ export default function LoginPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [successMsg, setSuccessMsg] = useState("");
 
+  // Forgot password flow states
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotStep, setForgotStep] = useState(1);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotOtp, setForgotOtp] = useState("");
+  const [forgotNewPassword, setForgotNewPassword] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState("");
+  const [forgotSuccess, setForgotSuccess] = useState("");
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    setForgotError("");
+    setForgotSuccess("");
+    setForgotLoading(true);
+
+    try {
+      if (forgotStep === 1) {
+        const res = await axios.post("/api/auth/forgot-password", {
+          email: forgotEmail,
+        });
+        if (res.data.success) {
+          setForgotSuccess(res.data.message || "OTP sent successfully!");
+          setForgotStep(2);
+        } else {
+          setForgotError(res.data.message || "Failed to send OTP");
+        }
+      } else {
+        const res = await axios.post("/api/auth/reset-password", {
+          email: forgotEmail,
+          otp: forgotOtp,
+          newPassword: forgotNewPassword,
+        });
+        if (res.data.success) {
+          setSuccessMsg("Password reset successfully! Please log in.");
+          setShowForgot(false);
+          setForgotStep(1);
+          setForgotEmail("");
+          setForgotOtp("");
+          setForgotNewPassword("");
+        } else {
+          setForgotError(res.data.message || "Failed to reset password");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setForgotError(err.response?.data?.message || "Operation failed");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     dispatch({ type: "auth/loading" });
@@ -136,146 +188,264 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Tab Toggle (Login vs Register) */}
-        <div className="flex bg-zinc-950 p-1.5 rounded-2xl border border-zinc-900/80 mb-6">
-          <button
-            type="button"
-            onClick={() => {
-              setIsLogin(true);
-              dispatch({ type: "auth/error", payload: null });
-            }}
-            className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-350 ${isLogin ? "bg-rose-600 text-white shadow-md shadow-rose-600/10" : "text-zinc-500 hover:text-zinc-300"}`}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setIsLogin(false);
-              dispatch({ type: "auth/error", payload: null });
-            }}
-            className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-350 ${!isLogin ? "bg-rose-600 text-white shadow-md shadow-rose-600/10" : "text-zinc-500 hover:text-zinc-300"}`}
-          >
-            Register
-          </button>
-        </div>
-
-        {/* Status Messages */}
-        {successMsg && (
-          <div className="mb-4.5 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wide">
-            {successMsg}
-          </div>
-        )}
-        {error && (
-          <div className="mb-4.5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-450 text-xs font-bold uppercase tracking-wide">
-            {error}
-          </div>
-        )}
-
-        {/* Input Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <div>
-              <label className="block text-[10px] font-black text-zinc-500 mb-1.5 uppercase tracking-wider">
-                Full Name
-              </label>
-              <input
-                type="text"
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Enter your full name"
-                className="w-full p-3 rounded-2xl bg-zinc-950 border border-zinc-850 text-zinc-200 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-zinc-700 transition-all text-xs font-medium"
-              />
-            </div>
-          )}
-
-          <div>
-            <label className="block text-[10px] font-black text-zinc-500 mb-1.5 uppercase tracking-wider">
-              Email Address
-            </label>
-            <input
-              type="email"
-              required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="name@example.com"
-              className="w-full p-3 rounded-2xl bg-zinc-950 border border-zinc-850 text-zinc-200 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-zinc-700 transition-all text-xs font-medium"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-black text-zinc-500 mb-1.5 uppercase tracking-wider">
-              Password
-            </label>
-            <input
-              type="password"
-              required
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="••••••••"
-              className="w-full p-3 rounded-2xl bg-zinc-950 border border-zinc-850 text-zinc-200 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-zinc-700 transition-all text-xs font-medium"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed font-black text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2 mt-6"
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <svg
-                  className="animate-spin h-4 w-4 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Processing...
-              </span>
-            ) : isLogin ? (
-              "Sign In"
-            ) : (
-              "Create Account"
+        {showForgot ? (
+          <form onSubmit={handleForgotSubmit} className="space-y-4">
+            <h3 className="text-sm font-black text-rose-500 uppercase tracking-wider text-center mb-4">
+              Reset Password
+            </h3>
+            {forgotError && (
+              <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-semibold leading-relaxed">
+                {forgotError}
+              </div>
             )}
-          </button>
-        </form>
+            {forgotSuccess && (
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-semibold leading-relaxed">
+                {forgotSuccess}
+              </div>
+            )}
 
-        {/* Divider & Social Login */}
-        {isLogin && (
+            {forgotStep === 1 ? (
+              <div>
+                <label className="block text-[10px] font-black text-zinc-500 mb-1.5 uppercase tracking-wider">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full p-3 rounded-2xl bg-zinc-950 border border-zinc-850 text-zinc-200 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-zinc-700 transition-all text-xs font-medium"
+                />
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-[10px] font-black text-zinc-500 mb-1.5 uppercase tracking-wider">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    disabled
+                    value={forgotEmail}
+                    className="w-full p-3 rounded-2xl bg-zinc-950 border border-zinc-900 text-zinc-650 cursor-not-allowed text-xs font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-zinc-500 mb-1.5 uppercase tracking-wider">
+                    OTP Code (Verification Code)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={forgotOtp}
+                    onChange={(e) => setForgotOtp(e.target.value)}
+                    placeholder="Enter 6-digit OTP"
+                    className="w-full p-3 rounded-2xl bg-zinc-950 border border-zinc-850 text-zinc-200 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-zinc-700 transition-all text-xs font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-zinc-500 mb-1.5 uppercase tracking-wider">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={forgotNewPassword}
+                    onChange={(e) => setForgotNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full p-3 rounded-2xl bg-zinc-950 border border-zinc-850 text-zinc-200 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-zinc-700 transition-all text-xs font-medium"
+                  />
+                </div>
+              </>
+            )}
+
+            <button
+              type="submit"
+              disabled={forgotLoading}
+              className="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed font-black text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2 mt-6"
+            >
+              {forgotLoading
+                ? "Processing..."
+                : forgotStep === 1
+                  ? "Send Verification Code"
+                  : "Reset Password"}
+            </button>
+
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForgot(false);
+                  setForgotError("");
+                  setForgotSuccess("");
+                }}
+                className="text-xs text-rose-500 hover:text-rose-400 font-bold uppercase tracking-wider transition-colors"
+              >
+                Back to Login
+              </button>
+            </div>
+          </form>
+        ) : (
           <>
-            <div className="flex items-center my-6">
-              <div className="flex-1 h-[1px] bg-zinc-900"></div>
-              <span className="px-4 text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                Or continue with
-              </span>
-              <div className="flex-1 h-[1px] bg-zinc-900"></div>
+            {/* Tab Toggle (Login vs Register) */}
+            <div className="flex bg-zinc-950 p-1.5 rounded-2xl border border-zinc-900/80 mb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(true);
+                  dispatch({ type: "auth/error", payload: null });
+                }}
+                className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-350 ${isLogin ? "bg-rose-600 text-white shadow-md shadow-rose-600/10" : "text-zinc-500 hover:text-zinc-300"}`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(false);
+                  dispatch({ type: "auth/error", payload: null });
+                }}
+                className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-350 ${!isLogin ? "bg-rose-600 text-white shadow-md shadow-rose-600/10" : "text-zinc-500 hover:text-zinc-300"}`}
+              >
+                Register
+              </button>
             </div>
 
-            <div className="flex justify-center">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() =>
-                  dispatch({
-                    type: "auth/error",
-                    payload: "Google login failed",
-                  })
-                }
-              />
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-semibold leading-relaxed">
+                  {error}
+                </div>
+              )}
+              {successMsg && (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-semibold leading-relaxed">
+                  {successMsg}
+                </div>
+              )}
+
+              {!isLogin && (
+                <div>
+                  <label className="block text-[10px] font-black text-zinc-500 mb-1.5 uppercase tracking-wider">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Enter your full name"
+                    className="w-full p-3 rounded-2xl bg-zinc-950 border border-zinc-850 text-zinc-200 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-zinc-700 transition-all text-xs font-medium"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[10px] font-black text-zinc-500 mb-1.5 uppercase tracking-wider">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="name@example.com"
+                  className="w-full p-3 rounded-2xl bg-zinc-950 border border-zinc-850 text-zinc-200 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-zinc-700 transition-all text-xs font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-zinc-500 mb-1.5 uppercase tracking-wider">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
+                  placeholder="••••••••"
+                  className="w-full p-3 rounded-2xl bg-zinc-950 border border-zinc-850 text-zinc-200 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 placeholder-zinc-700 transition-all text-xs font-medium"
+                />
+                {isLogin && (
+                  <div className="flex justify-end mt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgot(true);
+                        setForgotStep(1);
+                        setForgotError("");
+                        setForgotSuccess("");
+                      }}
+                      className="text-[10px] text-rose-500 hover:text-rose-400 font-bold uppercase tracking-wider transition-colors"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed font-black text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2 mt-6"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <svg
+                      className="animate-spin h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Processing...
+                  </span>
+                ) : isLogin ? (
+                  "Sign In"
+                ) : (
+                  "Create Account"
+                )}
+              </button>
+            </form>
+
+            {/* Divider & Social Login */}
+            {isLogin && (
+              <>
+                <div className="flex items-center my-6">
+                  <div className="flex-1 h-[1px] bg-zinc-900"></div>
+                  <span className="px-4 text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                    Or continue with
+                  </span>
+                  <div className="flex-1 h-[1px] bg-zinc-900"></div>
+                </div>
+
+                <div className="flex justify-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() =>
+                      dispatch({
+                        type: "auth/error",
+                        payload: "Google login failed",
+                      })
+                    }
+                  />
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
