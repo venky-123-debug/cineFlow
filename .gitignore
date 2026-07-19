@@ -13,3 +13,6 @@ CLIENT/user/node_modules/
 CLIENT/user/package-lock.json
 CLIENT/user/public/assets/
 CLIENT/user/dist/
+
+# Root Uploads
+UPLOADS/
