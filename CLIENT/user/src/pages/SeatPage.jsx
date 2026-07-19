@@ -16,6 +16,32 @@ export default function SeatPage() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [selectedCity, setSelectedCity] = useState(localStorage.getItem("city") || "Bangalore");
 
+  const [recommendCount, setRecommendCount] = useState(2);
+  const [recommendCategory, setRecommendCategory] = useState("STANDARD");
+  const [recommendError, setRecommendError] = useState("");
+  const [recommendLoading, setRecommendLoading] = useState(false);
+
+  const handleAutoSelect = async () => {
+    setRecommendError("");
+    setRecommendLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`/api/recommend/${showId}?count=${recommendCount}&category=${recommendCategory}`, {
+        headers: { "access-token": token },
+      });
+      if (res.data.success && res.data.data.seats && res.data.data.seats.length > 0) {
+        setSelected(res.data.data.seats);
+      } else {
+        setRecommendError(res.data.data.message || "No adjacent seats found in this category");
+      }
+    } catch (err) {
+      console.error(err);
+      setRecommendError(err.response?.data?.message || "Failed to recommend seats");
+    } finally {
+      setRecommendLoading(false);
+    }
+  };
+
   const loadSeats = async () => {
     setLoading(true);
     setError("");
@@ -233,6 +259,66 @@ export default function SeatPage() {
                 <span className="text-zinc-200 font-black block uppercase">Auditorium {seatData.screenNumber || 1}</span>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Smart Seat Auto-Select Assistant */}
+        {!loading && seatData && (
+          <div className="mb-6 p-4 rounded-3xl border border-zinc-800 bg-zinc-900/30 backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-2xl bg-rose-500/10 text-rose-500">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">Smart Assist</h4>
+                <p className="text-[10px] text-zinc-500 font-semibold">Let us find the best contiguous seats for you</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-zinc-400 font-bold uppercase">Seats:</span>
+                <select
+                  value={recommendCount}
+                  onChange={(e) => setRecommendCount(parseInt(e.target.value))}
+                  className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-rose-500 font-bold"
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    <option key={num} value={num}>
+                      {num} {num === 1 ? "Ticket" : "Tickets"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-zinc-400 font-bold uppercase">Tier:</span>
+                <select
+                  value={recommendCategory}
+                  onChange={(e) => setRecommendCategory(e.target.value)}
+                  className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-rose-500 font-bold"
+                >
+                  <option value="PREMIUM">Premium</option>
+                  <option value="STANDARD">Standard</option>
+                  <option value="ECONOMY">Economy</option>
+                </select>
+              </div>
+
+              <button
+                onClick={handleAutoSelect}
+                disabled={recommendLoading}
+                className="bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider py-1.5 px-4 rounded-xl transition duration-200 shadow-md shadow-rose-950/50 flex items-center gap-2"
+              >
+                {recommendLoading ? "Finding..." : "Auto Select"}
+              </button>
+            </div>
+            {recommendError && (
+              <div className="w-full text-xs text-rose-500 font-semibold px-2 mt-1">
+                ⚠️ {recommendError}
+              </div>
+            )}
           </div>
         )}
 
